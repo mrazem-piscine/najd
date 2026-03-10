@@ -1,0 +1,132 @@
+import 'volunteer.dart';
+
+enum TaskStatus {
+  pending,
+  active,
+  completed;
+
+  String get displayName {
+    switch (this) {
+      case TaskStatus.pending:
+        return 'Pending';
+      case TaskStatus.active:
+        return 'Active';
+      case TaskStatus.completed:
+        return 'Completed';
+    }
+  }
+
+  static TaskStatus fromString(String? value) {
+    if (value == null) return TaskStatus.pending;
+    return TaskStatus.values.firstWhere(
+      (e) => e.name == value.toLowerCase(),
+      orElse: () => TaskStatus.pending,
+    );
+  }
+}
+
+class TaskModel {
+  final String id;
+  final String title;
+  final String description;
+  final String location;
+  final List<String> requiredSkills;
+  final DateTime date;
+  final TaskStatus status;
+  final DateTime createdAt;
+  final List<Volunteer>? assignedVolunteers;
+
+  TaskModel({
+    required this.id,
+    required this.title,
+    required this.description,
+    required this.location,
+    required this.requiredSkills,
+    required this.date,
+    required this.status,
+    required this.createdAt,
+    this.assignedVolunteers,
+  });
+
+  factory TaskModel.fromJson(Map<String, dynamic> json) {
+    return TaskModel(
+      id: json['id'] as String,
+      title: json['title'] as String? ?? '',
+      description: json['description'] as String? ?? '',
+      location: json['location'] as String? ?? '',
+      requiredSkills: json['required_skills'] != null
+          ? List<String>.from(json['required_skills'] as List)
+          : [],
+      date: json['date'] != null
+          ? DateTime.parse(json['date'] as String)
+          : DateTime.now(),
+      status: TaskStatus.fromString(json['status'] as String?),
+      createdAt: json['created_at'] != null
+          ? DateTime.parse(json['created_at'] as String)
+          : DateTime.now(),
+      assignedVolunteers: null,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'title': title,
+      'description': description,
+      'location': location,
+      'required_skills': requiredSkills,
+      'date': date.toIso8601String(),
+      'status': status.name,
+      'created_at': createdAt.toIso8601String(),
+    };
+  }
+
+  TaskModel copyWith({
+    String? id,
+    String? title,
+    String? description,
+    String? location,
+    List<String>? requiredSkills,
+    DateTime? date,
+    TaskStatus? status,
+    DateTime? createdAt,
+    List<Volunteer>? assignedVolunteers,
+  }) {
+    return TaskModel(
+      id: id ?? this.id,
+      title: title ?? this.title,
+      description: description ?? this.description,
+      location: location ?? this.location,
+      requiredSkills: requiredSkills ?? this.requiredSkills,
+      date: date ?? this.date,
+      status: status ?? this.status,
+      createdAt: createdAt ?? this.createdAt,
+      assignedVolunteers: assignedVolunteers ?? this.assignedVolunteers,
+    );
+  }
+}
+
+class TaskAssignment {
+  final String id;
+  final String taskId;
+  final String volunteerId;
+  final DateTime assignedAt;
+
+  TaskAssignment({
+    required this.id,
+    required this.taskId,
+    required this.volunteerId,
+    required this.assignedAt,
+  });
+
+  factory TaskAssignment.fromJson(Map<String, dynamic> json) {
+    return TaskAssignment(
+      id: json['id'] as String,
+      taskId: json['task_id'] as String,
+      volunteerId: json['volunteer_id'] as String,
+      assignedAt: json['assigned_at'] != null
+          ? DateTime.parse(json['assigned_at'] as String)
+          : DateTime.now(),
+    );
+  }
+}

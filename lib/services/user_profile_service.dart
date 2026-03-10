@@ -1,0 +1,54 @@
+import 'package:supabase_flutter/supabase_flutter.dart';
+import '../models/volunteer.dart';
+
+class UserProfileService {
+  final SupabaseClient _client = Supabase.instance.client;
+  static const String _table = 'user_volunteer_profiles';
+
+  String? get currentUserId => _client.auth.currentUser?.id;
+
+  Future<Map<String, dynamic>?> getProfile() async {
+    final userId = currentUserId;
+    if (userId == null) return null;
+    final response = await _client.from(_table).select().eq('user_id', userId).maybeSingle();
+    return response as Map<String, dynamic>?;
+  }
+
+  Future<void> upsertProfile({
+    required String fullName,
+    required String phone,
+    required String city,
+    required List<String> skills,
+    required List<String> availability,
+    String? notes,
+  }) async {
+    final userId = currentUserId;
+    if (userId == null) throw Exception('Not authenticated');
+    final data = {
+      'user_id': userId,
+      'full_name': fullName,
+      'phone': phone,
+      'city': city,
+      'skills': skills,
+      'availability': availability,
+      'notes': notes,
+      'updated_at': DateTime.now().toIso8601String(),
+    };
+    await _client.from(_table).upsert(data, onConflict: 'user_id');
+  }
+
+  Future<Volunteer?> getProfileAsVolunteer() async {
+    final map = await getProfile();
+    if (map == null) return null;
+    return Volunteer(
+      id: map['id'] as String? ?? '',
+      fullName: map['full_name'] as String? ?? '',
+      phone: map['phone'] as String? ?? '',
+      city: map['city'] as String? ?? '',
+      skills: map['skills'] != null ? List<String>.from(map['skills'] as List) : [],
+      availability: map['availability'] != null ? List<String>.from(map['availability'] as List) : [],
+      notes: map['notes'] as String?,
+      createdAt: map['created_at'] != null ? DateTime.parse(map['created_at'] as String) : DateTime.now(),
+    );
+  }
+}
