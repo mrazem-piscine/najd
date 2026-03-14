@@ -8,7 +8,7 @@ import 'providers/auth_provider.dart';
 import 'screens/splash_screen.dart';
 import 'screens/auth/login_screen.dart';
 import 'screens/auth/signup_screen.dart';
-import 'screens/dashboard_screen.dart';
+import 'screens/role_based_root.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -48,7 +48,7 @@ class NajdVolunteerApp extends StatelessWidget {
         routes: {
           '/login': (context) => const LoginScreen(),
           '/signup': (context) => const SignupScreen(),
-          '/dashboard': (context) => const DashboardScreen(),
+          '/dashboard': (context) => const RoleBasedRoot(),
         },
       ),
     );
@@ -62,13 +62,13 @@ class AuthWrapper extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<AuthProvider>(
       builder: (context, auth, _) {
-        if (auth.isLoading) {
+        if (auth.isLoading || auth.isProfileLoading) {
           return const SplashScreen();
         }
         if (auth.user == null) {
           return const LoginScreen();
         }
-        return const DashboardScreen();
+        return const RoleBasedRoot();
       },
     );
   }

@@ -70,7 +70,7 @@ class TaskService {
         .eq('task_id', taskId);
     if (assignments.isEmpty) return [];
     final ids = (assignments as List).map((e) => (e as Map)['volunteer_id'] as String).toList();
-    final volunteers = await _client.from('volunteers').select().inFilter('id', ids);
+    final volunteers = await _client.from('profiles').select().inFilter('id', ids);
     return (volunteers as List).map((e) => Volunteer.fromJson(e as Map<String, dynamic>)).toList();
   }
 

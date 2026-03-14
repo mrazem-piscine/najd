@@ -56,9 +56,23 @@ class _AddVolunteerScreenState extends State<AddVolunteerScreen> {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Select at least one availability')));
       return;
     }
+    final isEdit = widget.editVolunteer != null;
+    if (!isEdit) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'In the new role-based system, volunteers create their own accounts via sign up.\n'
+            'Support can no longer manually create volunteer profiles here.',
+          ),
+          duration: Duration(seconds: 5),
+        ),
+      );
+      return;
+    }
+
     setState(() => _loading = true);
     try {
-      if (widget.editVolunteer != null) {
+      if (isEdit) {
         final updated = widget.editVolunteer!.copyWith(
           fullName: _nameController.text.trim(),
           phone: _phoneController.text.trim(),
@@ -70,19 +84,6 @@ class _AddVolunteerScreenState extends State<AddVolunteerScreen> {
         await _service.updateVolunteer(updated);
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Profile updated')));
-          Navigator.pop(context);
-        }
-      } else {
-        await _service.createVolunteer(
-          fullName: _nameController.text.trim(),
-          phone: _phoneController.text.trim(),
-          city: _cityController.text.trim(),
-          skills: _skills,
-          availability: _availability,
-          notes: _notesController.text.trim().isEmpty ? null : _notesController.text.trim(),
-        );
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Volunteer added')));
           Navigator.pop(context);
         }
       }

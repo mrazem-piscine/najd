@@ -1,9 +1,10 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
+
 import '../models/volunteer.dart';
 
 class VolunteerService {
   final SupabaseClient _client = Supabase.instance.client;
-  static const String _table = 'volunteers';
+  static const String _table = 'profiles';
 
   Future<List<Volunteer>> getVolunteers({
     String? search,
@@ -13,7 +14,7 @@ class VolunteerService {
     String sortBy = 'created_at',
     bool ascending = false,
   }) async {
-    var query = _client.from(_table).select();
+    var query = _client.from(_table).select().eq('role', 'volunteer');
 
     if (search != null && search.isNotEmpty) {
       query = query.or('full_name.ilike.%$search%,city.ilike.%$search%,phone.ilike.%$search%');
@@ -38,29 +39,8 @@ class VolunteerService {
     return Volunteer.fromJson(response as Map<String, dynamic>);
   }
 
-  Future<Volunteer> createVolunteer({
-    required String fullName,
-    required String phone,
-    required String city,
-    required List<String> skills,
-    required List<String> availability,
-    String? notes,
-  }) async {
-    final data = {
-      'full_name': fullName,
-      'phone': phone,
-      'city': city,
-      'skills': skills,
-      'availability': availability,
-      if (notes != null && notes.isNotEmpty) 'notes': notes,
-    };
-    final response = await _client.from(_table).insert(data).select().single();
-    return Volunteer.fromJson(response as Map<String, dynamic>);
-  }
-
   Future<Volunteer> updateVolunteer(Volunteer volunteer) async {
     final data = volunteer.toJson();
-    data.remove('id');
     data.remove('created_at');
     final response = await _client
         .from(_table)
@@ -71,17 +51,13 @@ class VolunteerService {
     return Volunteer.fromJson(response as Map<String, dynamic>);
   }
 
-  Future<void> deleteVolunteer(String id) async {
-    await _client.from(_table).delete().eq('id', id);
-  }
-
   Future<int> getVolunteersCount() async {
-    final response = await _client.from(_table).select('id');
+    final response = await _client.from(_table).select('id').eq('role', 'volunteer');
     return (response as List).length;
   }
 
   Future<List<String>> getDistinctCities() async {
-    final response = await _client.from(_table).select('city');
+    final response = await _client.from(_table).select('city').eq('role', 'volunteer');
     final cities = <String>{};
     for (final row in response as List) {
       final city = (row as Map<String, dynamic>)['city'] as String?;

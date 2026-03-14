@@ -1,16 +1,17 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
+
 import '../models/volunteer.dart';
 
 class UserProfileService {
   final SupabaseClient _client = Supabase.instance.client;
-  static const String _table = 'user_volunteer_profiles';
+  static const String _table = 'profiles';
 
   String? get currentUserId => _client.auth.currentUser?.id;
 
   Future<Map<String, dynamic>?> getProfile() async {
     final userId = currentUserId;
     if (userId == null) return null;
-    final response = await _client.from(_table).select().eq('user_id', userId).maybeSingle();
+    final response = await _client.from(_table).select().eq('id', userId).maybeSingle();
     return response as Map<String, dynamic>?;
   }
 
@@ -24,17 +25,18 @@ class UserProfileService {
   }) async {
     final userId = currentUserId;
     if (userId == null) throw Exception('Not authenticated');
+    final now = DateTime.now().toIso8601String();
     final data = {
-      'user_id': userId,
+      'id': userId,
       'full_name': fullName,
       'phone': phone,
       'city': city,
       'skills': skills,
       'availability': availability,
       'notes': notes,
-      'updated_at': DateTime.now().toIso8601String(),
+      'updated_at': now,
     };
-    await _client.from(_table).upsert(data, onConflict: 'user_id');
+    await _client.from(_table).upsert(data, onConflict: 'id');
   }
 
   Future<Volunteer?> getProfileAsVolunteer() async {
