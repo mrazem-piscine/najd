@@ -1,0 +1,229 @@
+═══════════════════════════════════════════════════════════════
+  NAJD VOLUNTEER — HOW TO RUN ON EACH PLATFORM
+═══════════════════════════════════════════════════════════════
+
+┌─────────────────────────────────────────────────────────────┐
+│  FIRST TIME SETUP (inside devcontainer)                     │
+└─────────────────────────────────────────────────────────────┘
+
+1. In VS Code open command palette: Cmd+Shift+P (Mac) / Ctrl+Shift+P
+2. Run: Dev Containers: Reopen in Container
+3. Wait for the container to build (first time takes a few minutes)
+4. Dependencies install automatically via `flutter pub get`
+5. Done — use `make run` or any target below
+
+
+┌─────────────────────────────────────────────────────────────┐
+│  WEB  (works everywhere, easiest option)                    │
+└─────────────────────────────────────────────────────────────┘
+
+Inside devcontainer:
+  make run-web
+  # or
+  flutter run -d web-server --web-port 8080 --web-hostname 0.0.0.0
+
+Then open http://localhost:8080 in your browser.
+Port 8080 is forwarded automatically by the devcontainer.
+
+
+┌─────────────────────────────────────────────────────────────┐
+│  ANDROID  (physical device — USB or WiFi)                   │
+└─────────────────────────────────────────────────────────────┘
+
+Step 1 — Prepare your phone:
+  • Settings → Developer Options → enable USB Debugging
+  • (WiFi) Settings → Developer Options → Wireless Debugging → Pair
+
+Step 2 — Start ADB on your HOST machine (not inside the container):
+  adb start-server
+  adb devices          # your phone should appear
+
+Step 3 — Open / reload the devcontainer.
+  The container connects to your host ADB server automatically.
+
+Step 4 — Run inside the devcontainer:
+  make run-android
+  # or
+  flutter run -d android
+
+For WiFi (Android 11+):
+  adb pair <phone-ip>:<pair-port>      # on your HOST
+  # then run inside container as above
+
+Emulators: Android emulators need hardware virtualization (KVM),
+which is not available inside Docker. Use a physical device or web.
+
+
+┌─────────────────────────────────────────────────────────────┐
+│  iOS / iPhone  (macOS host required)                        │
+└─────────────────────────────────────────────────────────────┘
+
+iOS builds require Xcode and CANNOT run inside the Linux container.
+Run directly on your Mac (outside the container):
+
+  cd /path/to/najd
+  flutter pub get
+  flutter run -d ios              # connected iPhone or simulator
+
+Or use the Makefile hint:
+  make run-ios                    # shows the exact command to copy
+
+
+┌─────────────────────────────────────────────────────────────┐
+│  IF YOU ARE ON MAC                                          │
+└─────────────────────────────────────────────────────────────┘
+
+── Step 1: Install Flutter on your Mac (one time only) ───────
+
+  brew install --cask flutter
+  flutter doctor          # fix any issues shown
+
+── Step 2: Start the devcontainer (for web / android / linux) ─
+
+  1. Open VS Code
+  2. Cmd+Shift+P → "Dev Containers: Reopen in Container"
+  3. Wait for the build to finish (first time only)
+  4. Inside the container terminal you can run:
+
+       make run-web        → http://localhost:8080
+       make run-android    → connected Android phone
+       make run-linux      → Linux desktop (virtual display)
+       make dev            → flutter pub get
+       make analyze        → static analysis
+       make test           → run tests
+       make build-apk      → release APK
+       make build-web      → release web build
+
+── Step 3: Run macOS / iOS from your Mac terminal (outside container) ─
+
+  Open a normal Mac terminal (not the container terminal), then:
+
+  cd /path/to/najd        # where you cloned the project
+  flutter pub get
+
+  # macOS desktop app:
+  flutter run -d macos
+
+  # iOS simulator:
+  open -a Simulator       # launch the iOS Simulator first
+  flutter run -d ios
+
+  # Connected iPhone (USB):
+  # Trust the Mac on your phone when prompted, then:
+  flutter run -d ios
+
+  Note: Xcode must be installed for iOS/macOS targets.
+  Install from the App Store, then run: sudo xcode-select --switch /Applications/Xcode.app
+
+
+┌─────────────────────────────────────────────────────────────┐
+│  IF YOU ARE ON WINDOWS                                      │
+└─────────────────────────────────────────────────────────────┘
+
+── Step 1: Install Flutter on Windows (one time only) ────────
+
+  1. Download Flutter SDK: https://docs.flutter.dev/get-started/install/windows
+  2. Extract to C:\flutter
+  3. Add C:\flutter\bin to your PATH environment variable
+  4. Open PowerShell and run:
+       flutter doctor        # fix any issues shown
+
+── Step 2: Install Docker Desktop (for the devcontainer) ─────
+
+  Download from: https://www.docker.com/products/docker-desktop
+  Enable "Use WSL 2 based engine" in Docker Desktop settings.
+
+── Step 3: Start the devcontainer (for web / android / linux) ─
+
+  1. Open VS Code
+  2. Ctrl+Shift+P → "Dev Containers: Reopen in Container"
+  3. Wait for the build to finish (first time only)
+  4. Inside the container terminal you can run:
+
+       make run-web        → http://localhost:8080
+       make run-android    → connected Android phone
+       make run-linux      → Linux desktop (virtual display)
+       make dev            → flutter pub get
+       make analyze        → static analysis
+       make test           → run tests
+       make build-apk      → release APK
+       make build-web      → release web build
+
+── Step 4: Run Windows app from PowerShell (outside container) ─
+
+  Open PowerShell or Windows Terminal (not the container terminal):
+
+  cd C:\path\to\najd      # where you cloned the project
+  flutter pub get
+  flutter run -d windows
+
+  Note: Visual Studio 2022 with "Desktop development with C++" workload
+  must be installed for Windows desktop builds.
+
+
+┌─────────────────────────────────────────────────────────────┐
+│  Linux desktop  (inside devcontainer or Linux host)         │
+└─────────────────────────────────────────────────────────────┘
+
+Inside devcontainer (uses Xvfb virtual display):
+  make run-linux
+  # or manually:
+  Xvfb :99 -screen 0 1280x800x24 &
+  DISPLAY=:99 flutter run -d linux
+
+On a Linux host with a real display:
+  flutter run -d linux
+
+
+┌─────────────────────────────────────────────────────────────┐
+│  AUTO-DETECT (smart runner)                                 │
+└─────────────────────────────────────────────────────────────┘
+
+  make run
+  # or
+  bash scripts/run.sh
+
+Priority order: Android → iOS → macOS/Windows/Linux → Web
+
+
+┌─────────────────────────────────────────────────────────────┐
+│  SWITCHING BETWEEN CONTAINER AND HOST                       │
+└─────────────────────────────────────────────────────────────┘
+
+You can switch back and forth anytime — no data is lost.
+Project files live on your host disk and are shared with the container.
+
+  Inside container → Host:
+    Cmd+Shift+P (Mac) / Ctrl+Shift+P (Windows)
+    → "Dev Containers: Reopen Folder Locally"
+
+  Host → Inside container:
+    Cmd+Shift+P (Mac) / Ctrl+Shift+P (Windows)
+    → "Dev Containers: Reopen in Container"
+    (starts in seconds if already built)
+
+  Quick check — bottom-left corner of VS Code:
+    ">< Dev Container: Najd..."  → you are INSIDE the container
+    No green badge               → you are on the HOST
+    Click the badge for a quick switch menu.
+
+
+┌─────────────────────────────────────────────────────────────┐
+│  QUICK REFERENCE                                            │
+└─────────────────────────────────────────────────────────────┘
+
+  make help          show all targets
+  make dev           flutter pub get
+  make run           auto-detect & run
+  make run-web       web  (port 8080)
+  make run-android   Android device
+  make run-linux     Linux desktop
+  make run-ios       iOS hint (needs Mac)
+  make run-macos     macOS hint (needs Mac)
+  make run-windows   Windows hint (needs Windows)
+  make build-apk     release APK
+  make build-web     release web
+  make analyze       static analysis
+  make test          run tests
+  make clean         clean build artifacts
+

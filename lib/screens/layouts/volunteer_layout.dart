@@ -34,12 +34,17 @@ class _VolunteerLayoutState extends State<VolunteerLayout> {
         onTap: (i) => setState(() => _index = i),
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.assignment), label: 'My Tasks'),
-          BottomNavigationBarItem(icon: Icon(Icons.schedule), label: 'Availability'),
-          BottomNavigationBarItem(icon: Icon(Icons.notifications), label: 'Notifications'),
-          BottomNavigationBarItem(icon: Icon(Icons.support_agent), label: 'Contact'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.assignment), label: 'My Tasks'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.schedule), label: 'Availability'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.notifications), label: 'Notifications'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.support_agent), label: 'Contact'),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
-          BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Settings'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.settings), label: 'Settings'),
         ],
       ),
     );
@@ -70,7 +75,10 @@ class _VolunteerHomeScreen extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             'Welcome',
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+            style: Theme.of(context)
+                .textTheme
+                .headlineSmall
+                ?.copyWith(fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
           Text(
@@ -158,7 +166,10 @@ class _ContactSupportScreen extends StatelessWidget {
           children: [
             Text(
               'Need help?',
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+              style: Theme.of(context)
+                  .textTheme
+                  .headlineSmall
+                  ?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
             Text(
@@ -166,9 +177,9 @@ class _ContactSupportScreen extends StatelessWidget {
               style: Theme.of(context).textTheme.bodyMedium,
             ),
             const SizedBox(height: 24),
-            TextField(
+            const TextField(
               maxLines: 5,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 labelText: 'Message',
                 alignLabelWithHint: true,
                 border: OutlineInputBorder(),
@@ -226,7 +237,10 @@ class _BigActionCard extends StatelessWidget {
                   children: [
                     Text(
                       title,
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                      style: Theme.of(context)
+                          .textTheme
+                          .titleMedium
+                          ?.copyWith(fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 4),
                     Text(
@@ -243,4 +257,3 @@ class _BigActionCard extends StatelessWidget {
     );
   }
 }
-

@@ -38,7 +38,8 @@ class _LoginScreenState extends State<LoginScreen> {
       return;
     }
     final auth = context.read<AuthProvider>();
-    final ok = await auth.signIn(_emailController.text.trim(), _passwordController.text);
+    final ok = await auth.signIn(
+        _emailController.text.trim(), _passwordController.text);
     if (ok && mounted) {
       Navigator.of(context).pushReplacementNamed('/dashboard');
     }
@@ -56,7 +57,8 @@ class _LoginScreenState extends State<LoginScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 const SizedBox(height: 48),
-                Icon(Icons.volunteer_activism, size: 64, color: AppTheme.primary),
+                const Icon(Icons.volunteer_activism,
+                    size: 64, color: AppTheme.primary),
                 const SizedBox(height: 16),
                 Text(
                   'Najd Volunteer',
@@ -95,8 +97,11 @@ class _LoginScreenState extends State<LoginScreen> {
                     labelText: 'Password',
                     prefixIcon: const Icon(Icons.lock_outline),
                     suffixIcon: IconButton(
-                      icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility),
-                      onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                      icon: Icon(_obscurePassword
+                          ? Icons.visibility_off
+                          : Icons.visibility),
+                      onPressed: () =>
+                          setState(() => _obscurePassword = !_obscurePassword),
                     ),
                   ),
                   validator: (v) {
@@ -113,9 +118,14 @@ class _LoginScreenState extends State<LoginScreen> {
                 ],
                 const SizedBox(height: 24),
                 ElevatedButton(
-                  onPressed: context.watch<AuthProvider>().isLoading ? null : _submit,
+                  onPressed:
+                      context.watch<AuthProvider>().isLoading ? null : _submit,
                   child: context.watch<AuthProvider>().isLoading
-                      ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                              strokeWidth: 2, color: Colors.white))
                       : const Text('Sign In'),
                 ),
                 const SizedBox(height: 16),

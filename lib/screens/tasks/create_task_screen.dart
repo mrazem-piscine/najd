@@ -19,8 +19,8 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
   final _descriptionController = TextEditingController();
   final _locationController = TextEditingController();
   DateTime _date = DateTime.now();
-  List<String> _requiredSkills = [];
-  List<String> _selectedVolunteerIds = [];
+  final List<String> _requiredSkills = [];
+  final List<String> _selectedVolunteerIds = [];
   List<Volunteer> _volunteers = [];
   bool _loading = false;
   bool _volunteersLoading = true;
@@ -42,7 +42,12 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
   Future<void> _loadVolunteers() async {
     try {
       final list = await _volunteerService.getVolunteers();
-      if (mounted) setState(() { _volunteers = list; _volunteersLoading = false; });
+      if (mounted) {
+        setState(() {
+          _volunteers = list;
+          _volunteersLoading = false;
+        });
+      }
     } catch (_) {
       if (mounted) setState(() => _volunteersLoading = false);
     }
@@ -73,11 +78,15 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
         await _taskService.assignVolunteers(task.id, _selectedVolunteerIds);
       }
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Task created')));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(const SnackBar(content: Text('Task created')));
         Navigator.pop(context);
       }
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('Error: $e')));
+      }
     }
     if (mounted) setState(() => _loading = false);
   }
@@ -95,31 +104,38 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
             children: [
               TextFormField(
                 controller: _titleController,
-                decoration: const InputDecoration(labelText: 'Task Title', prefixIcon: Icon(Icons.title)),
-                validator: (v) => v == null || v.trim().isEmpty ? 'Required' : null,
+                decoration: const InputDecoration(
+                    labelText: 'Task Title', prefixIcon: Icon(Icons.title)),
+                validator: (v) =>
+                    v == null || v.trim().isEmpty ? 'Required' : null,
               ),
               const SizedBox(height: 16),
               TextFormField(
                 controller: _descriptionController,
                 maxLines: 3,
-                decoration: const InputDecoration(labelText: 'Description', alignLabelWithHint: true),
+                decoration: const InputDecoration(
+                    labelText: 'Description', alignLabelWithHint: true),
               ),
               const SizedBox(height: 16),
               TextFormField(
                 controller: _locationController,
-                decoration: const InputDecoration(labelText: 'Location', prefixIcon: Icon(Icons.location_on)),
-                validator: (v) => v == null || v.trim().isEmpty ? 'Required' : null,
+                decoration: const InputDecoration(
+                    labelText: 'Location', prefixIcon: Icon(Icons.location_on)),
+                validator: (v) =>
+                    v == null || v.trim().isEmpty ? 'Required' : null,
               ),
               const SizedBox(height: 16),
               ListTile(
                 contentPadding: EdgeInsets.zero,
                 title: const Text('Date'),
-                subtitle: Text('${_date.year}-${_date.month.toString().padLeft(2, '0')}-${_date.day.toString().padLeft(2, '0')}'),
+                subtitle: Text(
+                    '${_date.year}-${_date.month.toString().padLeft(2, '0')}-${_date.day.toString().padLeft(2, '0')}'),
                 trailing: const Icon(Icons.calendar_today),
                 onTap: _pickDate,
               ),
               const SizedBox(height: 16),
-              const Text('Required Skills', style: TextStyle(fontWeight: FontWeight.w500)),
+              const Text('Required Skills',
+                  style: TextStyle(fontWeight: FontWeight.w500)),
               const SizedBox(height: 8),
               Wrap(
                 spacing: 8,
@@ -131,17 +147,24 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
                     selected: selected,
                     onSelected: (v) {
                       setState(() {
-                        if (v) _requiredSkills.add(s); else _requiredSkills.remove(s);
+                        if (v) {
+                          _requiredSkills.add(s);
+                        } else {
+                          _requiredSkills.remove(s);
+                        }
                       });
                     },
                   );
                 }).toList(),
               ),
               const SizedBox(height: 20),
-              const Text('Assign Volunteers', style: TextStyle(fontWeight: FontWeight.w500)),
+              const Text('Assign Volunteers',
+                  style: TextStyle(fontWeight: FontWeight.w500)),
               const SizedBox(height: 8),
               if (_volunteersLoading)
-                const Padding(padding: EdgeInsets.all(16), child: Center(child: CircularProgressIndicator()))
+                const Padding(
+                    padding: EdgeInsets.all(16),
+                    child: Center(child: CircularProgressIndicator()))
               else if (_volunteers.isEmpty)
                 const Text('No volunteers in database')
               else
@@ -151,8 +174,11 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
                     value: selected,
                     onChanged: (val) {
                       setState(() {
-                        if (val == true) _selectedVolunteerIds.add(v.id);
-                        else _selectedVolunteerIds.remove(v.id);
+                        if (val == true) {
+                          _selectedVolunteerIds.add(v.id);
+                        } else {
+                          _selectedVolunteerIds.remove(v.id);
+                        }
                       });
                     },
                     title: Text(v.fullName),
@@ -163,7 +189,11 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
               ElevatedButton(
                 onPressed: _loading ? null : _submit,
                 child: _loading
-                    ? const SizedBox(height: 24, width: 24, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                    ? const SizedBox(
+                        height: 24,
+                        width: 24,
+                        child: CircularProgressIndicator(
+                            strokeWidth: 2, color: Colors.white))
                     : const Text('Create Task'),
               ),
             ],

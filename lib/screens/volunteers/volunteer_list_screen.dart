@@ -21,8 +21,8 @@ class _VolunteerListScreenState extends State<VolunteerListScreen> {
   List<String> _cities = [];
   bool _loading = true;
   String? _filterCity;
-  List<String> _filterSkills = [];
-  List<String> _filterAvailability = [];
+  final List<String> _filterSkills = [];
+  final List<String> _filterAvailability = [];
   SortOption _sort = SortOption.newest;
 
   @override
@@ -46,7 +46,8 @@ class _VolunteerListScreenState extends State<VolunteerListScreen> {
       _applyFiltersAndSort(_allVolunteers);
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('Error: $e')));
       }
     }
     if (mounted) setState(() => _loading = false);
@@ -66,10 +67,15 @@ class _VolunteerListScreenState extends State<VolunteerListScreen> {
       listCopy = listCopy.where((v) => v.city == _filterCity).toList();
     }
     if (_filterSkills.isNotEmpty) {
-      listCopy = listCopy.where((v) => v.skills.any((s) => _filterSkills.contains(s))).toList();
+      listCopy = listCopy
+          .where((v) => v.skills.any((s) => _filterSkills.contains(s)))
+          .toList();
     }
     if (_filterAvailability.isNotEmpty) {
-      listCopy = listCopy.where((v) => v.availability.any((a) => _filterAvailability.contains(a))).toList();
+      listCopy = listCopy
+          .where(
+              (v) => v.availability.any((a) => _filterAvailability.contains(a)))
+          .toList();
     }
     switch (_sort) {
       case SortOption.newest:
@@ -105,7 +111,8 @@ class _VolunteerListScreenState extends State<VolunteerListScreen> {
               decoration: InputDecoration(
                 hintText: 'Search by name, city, phone...',
                 prefixIcon: const Icon(Icons.search),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                border:
+                    OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
               ),
               onChanged: (_) => _applyFilters(),
             ),
@@ -118,7 +125,12 @@ class _VolunteerListScreenState extends State<VolunteerListScreen> {
                 DropdownButton<String>(
                   value: _filterCity,
                   hint: const Text('City'),
-                  items: [const DropdownMenuItem(value: null, child: Text('All cities')), ..._cities.map((c) => DropdownMenuItem(value: c, child: Text(c)))],
+                  items: [
+                    const DropdownMenuItem(
+                        value: null, child: Text('All cities')),
+                    ..._cities
+                        .map((c) => DropdownMenuItem(value: c, child: Text(c)))
+                  ],
                   onChanged: (v) {
                     setState(() {
                       _filterCity = v;
@@ -136,13 +148,22 @@ class _VolunteerListScreenState extends State<VolunteerListScreen> {
                     });
                   },
                   itemBuilder: (context) => [
-                    const PopupMenuItem(value: SortOption.newest, child: Text('Newest')),
-                    const PopupMenuItem(value: SortOption.alphabetical, child: Text('Alphabetical')),
-                    const PopupMenuItem(value: SortOption.city, child: Text('By City')),
+                    const PopupMenuItem(
+                        value: SortOption.newest, child: Text('Newest')),
+                    const PopupMenuItem(
+                        value: SortOption.alphabetical,
+                        child: Text('Alphabetical')),
+                    const PopupMenuItem(
+                        value: SortOption.city, child: Text('By City')),
                   ],
                   child: Chip(
-                    avatar: const Icon(Icons.sort, size: 18, color: AppTheme.primary),
-                    label: Text(_sort == SortOption.newest ? 'Newest' : _sort == SortOption.alphabetical ? 'A–Z' : 'City'),
+                    avatar: const Icon(Icons.sort,
+                        size: 18, color: AppTheme.primary),
+                    label: Text(_sort == SortOption.newest
+                        ? 'Newest'
+                        : _sort == SortOption.alphabetical
+                            ? 'A–Z'
+                            : 'City'),
                   ),
                 ),
               ],
@@ -152,7 +173,9 @@ class _VolunteerListScreenState extends State<VolunteerListScreen> {
             child: _loading
                 ? const Center(child: CircularProgressIndicator())
                 : _volunteers.isEmpty
-                    ? Center(child: Text('No volunteers found', style: TextStyle(color: Colors.grey.shade600)))
+                    ? Center(
+                        child: Text('No volunteers found',
+                            style: TextStyle(color: Colors.grey.shade600)))
                     : RefreshIndicator(
                         onRefresh: _load,
                         child: ListView.builder(
@@ -165,7 +188,8 @@ class _VolunteerListScreenState extends State<VolunteerListScreen> {
                               onTap: () => Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (_) => VolunteerProfileScreen(volunteerId: v.id),
+                                  builder: (_) =>
+                                      VolunteerProfileScreen(volunteerId: v.id),
                                 ),
                               ).then((_) => _load()),
                             );
@@ -199,22 +223,42 @@ class _VolunteerCard extends StatelessWidget {
             children: [
               Text(
                 volunteer.fullName,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                style: Theme.of(context)
+                    .textTheme
+                    .titleMedium
+                    ?.copyWith(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 4),
-              Row(children: [const Icon(Icons.location_on, size: 16), const SizedBox(width: 4), Text(volunteer.city)]),
+              Row(children: [
+                const Icon(Icons.location_on, size: 16),
+                const SizedBox(width: 4),
+                Text(volunteer.city)
+              ]),
               const SizedBox(height: 4),
               Wrap(
                 spacing: 4,
-                children: volunteer.skills.take(3).map((s) => Chip(label: Text(s, style: const TextStyle(fontSize: 11)), materialTapTargetSize: MaterialTapTargetSize.shrinkWrap)).toList(),
+                children: volunteer.skills
+                    .take(3)
+                    .map((s) => Chip(
+                        label: Text(s, style: const TextStyle(fontSize: 11)),
+                        materialTapTargetSize:
+                            MaterialTapTargetSize.shrinkWrap))
+                    .toList(),
               ),
               const SizedBox(height: 4),
               Wrap(
                 spacing: 4,
-                children: volunteer.availability.take(2).map((a) => Chip(label: Text(a, style: const TextStyle(fontSize: 11)), materialTapTargetSize: MaterialTapTargetSize.shrinkWrap)).toList(),
+                children: volunteer.availability
+                    .take(2)
+                    .map((a) => Chip(
+                        label: Text(a, style: const TextStyle(fontSize: 11)),
+                        materialTapTargetSize:
+                            MaterialTapTargetSize.shrinkWrap))
+                    .toList(),
               ),
               const SizedBox(height: 4),
-              Text(volunteer.phone, style: Theme.of(context).textTheme.bodySmall),
+              Text(volunteer.phone,
+                  style: Theme.of(context).textTheme.bodySmall),
             ],
           ),
         ),

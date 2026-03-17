@@ -17,7 +17,8 @@ class VolunteerService {
     var query = _client.from(_table).select().eq('role', 'volunteer');
 
     if (search != null && search.isNotEmpty) {
-      query = query.or('full_name.ilike.%$search%,city.ilike.%$search%,phone.ilike.%$search%');
+      query = query.or(
+          'full_name.ilike.%$search%,city.ilike.%$search%,phone.ilike.%$search%');
     }
     if (city != null && city.isNotEmpty) {
       query = query.eq('city', city);
@@ -30,13 +31,16 @@ class VolunteerService {
     }
 
     final response = await query.order(sortBy, ascending: ascending);
-    return (response as List).map((e) => Volunteer.fromJson(e as Map<String, dynamic>)).toList();
+    return (response as List)
+        .map((e) => Volunteer.fromJson(e as Map<String, dynamic>))
+        .toList();
   }
 
   Future<Volunteer?> getVolunteerById(String id) async {
-    final response = await _client.from(_table).select().eq('id', id).maybeSingle();
+    final response =
+        await _client.from(_table).select().eq('id', id).maybeSingle();
     if (response == null) return null;
-    return Volunteer.fromJson(response as Map<String, dynamic>);
+    return Volunteer.fromJson(response);
   }
 
   Future<Volunteer> updateVolunteer(Volunteer volunteer) async {
@@ -48,16 +52,18 @@ class VolunteerService {
         .eq('id', volunteer.id)
         .select()
         .single();
-    return Volunteer.fromJson(response as Map<String, dynamic>);
+    return Volunteer.fromJson(response);
   }
 
   Future<int> getVolunteersCount() async {
-    final response = await _client.from(_table).select('id').eq('role', 'volunteer');
+    final response =
+        await _client.from(_table).select('id').eq('role', 'volunteer');
     return (response as List).length;
   }
 
   Future<List<String>> getDistinctCities() async {
-    final response = await _client.from(_table).select('city').eq('role', 'volunteer');
+    final response =
+        await _client.from(_table).select('city').eq('role', 'volunteer');
     final cities = <String>{};
     for (final row in response as List) {
       final city = (row as Map<String, dynamic>)['city'] as String?;

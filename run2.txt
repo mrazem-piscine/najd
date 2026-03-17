@@ -1,0 +1,92 @@
+═══════════════════════════════════════════════════════════════
+  NAJD VOLUNTEER — QUICK RUN SUMMARY
+═══════════════════════════════════════════════════════════════
+
+
+▌ MAC USERS
+│
+├─ macOS / iOS (run on Mac terminal, outside container):
+│
+│    cd /path/to/najd
+│    flutter pub get
+│
+│    flutter run -d macos          # macOS desktop app
+│    flutter run -d ios            # iOS simulator or connected iPhone
+│
+└─ Web / Android / Linux (inside devcontainer):
+     1. Open VS Code
+     2. Cmd+Shift+P → "Dev Containers: Reopen in Container"
+     3. Wait for the build (first time only)
+     4. In the container terminal:
+
+          make run-web        → http://localhost:8080
+          make run-android    → connected Android phone
+          make run-linux      → Linux desktop (virtual display)
+          make dev            → flutter pub get
+          make analyze        → static analysis
+          make test           → run tests
+          make build-apk      → release APK
+          make build-web      → release web build
+
+
+▌ WINDOWS USERS
+│
+├─ Windows app (run in PowerShell, outside container):
+│
+│    cd C:\path\to\najd
+│    flutter pub get
+│    flutter run -d windows
+│
+└─ Web / Android / Linux (inside devcontainer):
+     1. Open VS Code
+     2. Ctrl+Shift+P → "Dev Containers: Reopen in Container"
+     3. Wait for the build (first time only)
+     4. In the container terminal:
+
+          make run-web        → http://localhost:8080
+          make run-android    → connected Android phone
+          make run-linux      → Linux desktop (virtual display)
+          make dev            → flutter pub get
+          make analyze        → static analysis
+          make test           → run tests
+          make build-apk      → release APK
+          make build-web      → release web build
+
+
+▌ ANDROID (any host)
+│
+│  Step 1 — On your HOST machine:
+│    adb start-server
+│    adb devices          # phone must appear here
+│
+│  Step 2 — Inside devcontainer:
+│    make run-android
+│
+│  WiFi (Android 11+): adb pair <phone-ip>:<port>  (on host first)
+
+
+▌ WEB (any host, easiest)
+│
+│  Inside devcontainer:
+│    make run-web
+│
+│  Open http://localhost:8080 in your browser.
+
+
+▌ SWITCHING BETWEEN CONTAINER AND HOST
+│
+│  You can switch back and forth anytime — no data is lost.
+│
+├─ Container → Host:
+│    Cmd+Shift+P (Mac) / Ctrl+Shift+P (Windows)
+│    → "Dev Containers: Reopen Folder Locally"
+│
+├─ Host → Container:
+│    Cmd+Shift+P (Mac) / Ctrl+Shift+P (Windows)
+│    → "Dev Containers: Reopen in Container"
+│    (starts in seconds if already built)
+│
+└─ Quick check — bottom-left corner of VS Code:
+     ">< Dev Container: Najd..."  → INSIDE the container
+     No green badge               → on the HOST
+     Click the badge to switch instantly.

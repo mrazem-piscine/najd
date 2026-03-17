@@ -1,0 +1,44 @@
+{
+  "name": "Najd Volunteer Flutter",
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "Dart-Code.dart-code",
+        "Dart-Code.flutter",
+        "eamodio.gitlens",
+        "ms-vscode.makefile-tools"
+      ]
+    }
+  },
+
+  // ── Android ADB forwarding ──────────────────────────────────────────────
+  // Tells the ADB client inside the container to use the host machine's
+  // ADB server (which has direct USB access to your phone).
+  // Requires: run `adb start-server` on your host BEFORE opening the container.
+  "runArgs": [
+    "--add-host=host.docker.internal:host-gateway"
+  ],
+  "remoteEnv": {
+    "ANDROID_ADB_SERVER_ADDRESS": "host.docker.internal",
+    "ANDROID_ADB_SERVER_PORT": "5037"
+  },
+
+  "postCreateCommand": "flutter pub get",
+  "postStartCommand": "bash scripts/setup-adb.sh",
+  "remoteUser": "root",
+
+  "forwardPorts": [8080, 8081, 5037],
+  "portsAttributes": {
+    "8080": {
+      "label": "Flutter Web",
+      "onAutoForward": "notify"
+    },
+    "5037": {
+      "label": "ADB Server",
+      "onAutoForward": "silent"
+    }
+  }
+}

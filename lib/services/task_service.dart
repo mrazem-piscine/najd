@@ -13,13 +13,16 @@ class TaskService {
       query = query.eq('status', status.name);
     }
     final response = await query.order('date', ascending: false);
-    return (response as List).map((e) => TaskModel.fromJson(e as Map<String, dynamic>)).toList();
+    return (response as List)
+        .map((e) => TaskModel.fromJson(e as Map<String, dynamic>))
+        .toList();
   }
 
   Future<TaskModel?> getTaskById(String id) async {
-    final response = await _client.from(_tasksTable).select().eq('id', id).maybeSingle();
+    final response =
+        await _client.from(_tasksTable).select().eq('id', id).maybeSingle();
     if (response == null) return null;
-    return TaskModel.fromJson(response as Map<String, dynamic>);
+    return TaskModel.fromJson(response);
   }
 
   Future<TaskModel> createTask({
@@ -38,8 +41,9 @@ class TaskService {
       'date': date.toIso8601String(),
       'status': status.name,
     };
-    final response = await _client.from(_tasksTable).insert(data).select().single();
-    return TaskModel.fromJson(response as Map<String, dynamic>);
+    final response =
+        await _client.from(_tasksTable).insert(data).select().single();
+    return TaskModel.fromJson(response);
   }
 
   Future<TaskModel> updateTask(TaskModel task) async {
@@ -51,12 +55,19 @@ class TaskService {
       'date': task.date.toIso8601String(),
       'status': task.status.name,
     };
-    final response = await _client.from(_tasksTable).update(data).eq('id', task.id).select().single();
-    return TaskModel.fromJson(response as Map<String, dynamic>);
+    final response = await _client
+        .from(_tasksTable)
+        .update(data)
+        .eq('id', task.id)
+        .select()
+        .single();
+    return TaskModel.fromJson(response);
   }
 
   Future<void> updateTaskStatus(String taskId, TaskStatus status) async {
-    await _client.from(_tasksTable).update({'status': status.name}).eq('id', taskId);
+    await _client
+        .from(_tasksTable)
+        .update({'status': status.name}).eq('id', taskId);
   }
 
   Future<void> deleteTask(String id) async {
@@ -69,15 +80,23 @@ class TaskService {
         .select('volunteer_id')
         .eq('task_id', taskId);
     if (assignments.isEmpty) return [];
-    final ids = (assignments as List).map((e) => (e as Map)['volunteer_id'] as String).toList();
-    final volunteers = await _client.from('profiles').select().inFilter('id', ids);
-    return (volunteers as List).map((e) => Volunteer.fromJson(e as Map<String, dynamic>)).toList();
+    final ids = (assignments as List)
+        .map((e) => (e as Map)['volunteer_id'] as String)
+        .toList();
+    final volunteers =
+        await _client.from('profiles').select().inFilter('id', ids);
+    return (volunteers as List)
+        .map((e) => Volunteer.fromJson(e as Map<String, dynamic>))
+        .toList();
   }
 
-  Future<void> assignVolunteers(String taskId, List<String> volunteerIds) async {
+  Future<void> assignVolunteers(
+      String taskId, List<String> volunteerIds) async {
     await _client.from(_assignmentsTable).delete().eq('task_id', taskId);
     if (volunteerIds.isEmpty) return;
-    final rows = volunteerIds.map((vId) => {'task_id': taskId, 'volunteer_id': vId}).toList();
+    final rows = volunteerIds
+        .map((vId) => {'task_id': taskId, 'volunteer_id': vId})
+        .toList();
     await _client.from(_assignmentsTable).insert(rows);
   }
 
@@ -90,10 +109,8 @@ class TaskService {
   }
 
   Future<int> getCompletedTasksCount() async {
-    final response = await _client
-        .from(_tasksTable)
-        .select('id')
-        .eq('status', 'completed');
+    final response =
+        await _client.from(_tasksTable).select('id').eq('status', 'completed');
     return (response as List).length;
   }
 }
