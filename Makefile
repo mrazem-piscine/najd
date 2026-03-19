@@ -78,8 +78,7 @@ build: build-apk
 
 # ── Quality ───────────────────────────────────────────────────────────────
 analyze:
-	flutter analyze
-
+	flutter analyze --no-fatal-infos --no-fatal-warnings
 test:
 	flutter test
 

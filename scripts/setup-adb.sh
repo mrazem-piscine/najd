@@ -1,21 +1,18 @@
-#!/bin/bash
-# Connects the container's ADB client to the host machine's ADB server.
-# The host ADB server manages USB/wireless device access directly.
-# Requires: `adb start-server` running on the host before the container starts.
+#!/usr/bin/env bash
+set -e
 
-echo "=== ADB Setup ==="
+echo "Setting up ADB..."
 
-# Check connectivity to host ADB server
-if adb devices 2>/dev/null | grep -q "device"; then
-    echo "✓ Android device detected via host ADB server:"
-    adb devices
-elif adb devices 2>/dev/null; then
-    echo "  No Android device connected yet."
-    echo "  To connect a device:"
-    echo "    USB  → enable USB Debugging, plug in, then run: adb devices (on host)"
-    echo "    WiFi → Developer Options → Wireless debugging → pair"
-else
-    echo "  Could not reach host ADB server."
-    echo "  On your host machine run: adb start-server"
+if ! command -v adb >/dev/null 2>&1; then
+  echo "adb is not installed in the container. Skipping ADB setup."
+  exit 0
 fi
-echo ""
+
+if timeout 3 adb devices >/dev/null 2>&1; then
+  echo "ADB is available."
+else
+  echo "ADB server/device not reachable right now. Skipping ADB setup."
+fi
+
+echo "ADB setup script finished."
+exit 0
