@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import '../../config/theme.dart';
 import '../../models/task_model.dart';
 import '../../models/volunteer.dart';
 import '../../services/task_service.dart';
@@ -35,9 +34,17 @@ class _TaskDetailsScreenState extends State<TaskDetailsScreen> {
       if (task != null) {
         assigned = await _service.getAssignedVolunteers(task.id);
       }
-      if (mounted) setState(() { _task = task; _assigned = assigned; });
+      if (mounted) {
+        setState(() {
+          _task = task;
+          _assigned = assigned;
+        });
+      }
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('Error: $e')));
+      }
     }
     if (mounted) setState(() => _loading = false);
   }
@@ -48,7 +55,10 @@ class _TaskDetailsScreenState extends State<TaskDetailsScreen> {
       await _service.updateTaskStatus(_task!.id, status);
       if (mounted) setState(() => _task = _task!.copyWith(status: status));
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('Error: $e')));
+      }
     }
   }
 
@@ -67,7 +77,11 @@ class _TaskDetailsScreenState extends State<TaskDetailsScreen> {
       );
     }
     final task = _task!;
-    final statusColor = task.status == TaskStatus.completed ? Colors.teal : task.status == TaskStatus.active ? Colors.orange : Colors.grey;
+    final statusColor = task.status == TaskStatus.completed
+        ? Colors.teal
+        : task.status == TaskStatus.active
+            ? Colors.orange
+            : Colors.grey;
     return Scaffold(
       appBar: AppBar(
         title: const Text('Task Details'),
@@ -76,8 +90,11 @@ class _TaskDetailsScreenState extends State<TaskDetailsScreen> {
             PopupMenuButton<TaskStatus>(
               onSelected: _updateStatus,
               itemBuilder: (context) => [
-                if (task.status != TaskStatus.active) const PopupMenuItem(value: TaskStatus.active, child: Text('Mark Active')),
-                const PopupMenuItem(value: TaskStatus.completed, child: Text('Mark Completed')),
+                if (task.status != TaskStatus.active)
+                  const PopupMenuItem(
+                      value: TaskStatus.active, child: Text('Mark Active')),
+                const PopupMenuItem(
+                    value: TaskStatus.completed, child: Text('Mark Completed')),
               ],
             ),
         ],
@@ -95,8 +112,15 @@ class _TaskDetailsScreenState extends State<TaskDetailsScreen> {
                   children: [
                     Row(
                       children: [
-                        Expanded(child: Text(task.title, style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold))),
-                        Chip(label: Text(task.status.displayName), backgroundColor: statusColor.withOpacity(0.2)),
+                        Expanded(
+                            child: Text(task.title,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .headlineSmall
+                                    ?.copyWith(fontWeight: FontWeight.bold))),
+                        Chip(
+                            label: Text(task.status.displayName),
+                            backgroundColor: statusColor.withOpacity(0.2)),
                       ],
                     ),
                     const SizedBox(height: 12),
@@ -112,7 +136,8 @@ class _TaskDetailsScreenState extends State<TaskDetailsScreen> {
                       contentPadding: EdgeInsets.zero,
                       leading: const Icon(Icons.calendar_today),
                       title: const Text('Date'),
-                      subtitle: Text(DateFormat.yMMMd().add_jm().format(task.date)),
+                      subtitle:
+                          Text(DateFormat.yMMMd().add_jm().format(task.date)),
                     ),
                     if (task.requiredSkills.isNotEmpty) ...[
                       const SizedBox(height: 8),
@@ -121,7 +146,9 @@ class _TaskDetailsScreenState extends State<TaskDetailsScreen> {
                       Wrap(
                         spacing: 6,
                         runSpacing: 6,
-                        children: task.requiredSkills.map((s) => Chip(label: Text(s))).toList(),
+                        children: task.requiredSkills
+                            .map((s) => Chip(label: Text(s)))
+                            .toList(),
                       ),
                     ],
                   ],
@@ -129,24 +156,33 @@ class _TaskDetailsScreenState extends State<TaskDetailsScreen> {
               ),
             ),
             const SizedBox(height: 16),
-            Text('Assigned Volunteers (${_assigned.length})', style: Theme.of(context).textTheme.titleMedium),
+            Text('Assigned Volunteers (${_assigned.length})',
+                style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(height: 8),
             if (_assigned.isEmpty)
-              const Card(child: Padding(padding: EdgeInsets.all(16), child: Text('No volunteers assigned')))
+              const Card(
+                  child: Padding(
+                      padding: EdgeInsets.all(16),
+                      child: Text('No volunteers assigned')))
             else
               ..._assigned.map((v) => Card(
-                margin: const EdgeInsets.only(bottom: 8),
-                child: ListTile(
-                  leading: CircleAvatar(child: Text(v.fullName.isNotEmpty ? v.fullName[0].toUpperCase() : '?')),
-                  title: Text(v.fullName),
-                  subtitle: Text('${v.phone} • ${v.city}'),
-                  trailing: const Icon(Icons.chevron_right),
-                  onTap: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => VolunteerProfileScreen(volunteerId: v.id)),
-                  ),
-                ),
-              )),
+                    margin: const EdgeInsets.only(bottom: 8),
+                    child: ListTile(
+                      leading: CircleAvatar(
+                          child: Text(v.fullName.isNotEmpty
+                              ? v.fullName[0].toUpperCase()
+                              : '?')),
+                      title: Text(v.fullName),
+                      subtitle: Text('${v.phone} • ${v.city}'),
+                      trailing: const Icon(Icons.chevron_right),
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) =>
+                                VolunteerProfileScreen(volunteerId: v.id)),
+                      ),
+                    ),
+                  )),
           ],
         ),
       ),

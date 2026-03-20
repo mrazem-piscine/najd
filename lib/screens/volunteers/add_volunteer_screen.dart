@@ -49,11 +49,13 @@ class _AddVolunteerScreenState extends State<AddVolunteerScreen> {
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
     if (_skills.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Select at least one skill')));
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Select at least one skill')));
       return;
     }
     if (_availability.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Select at least one availability')));
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Select at least one availability')));
       return;
     }
     final isEdit = widget.editVolunteer != null;
@@ -79,16 +81,22 @@ class _AddVolunteerScreenState extends State<AddVolunteerScreen> {
           city: _cityController.text.trim(),
           skills: _skills,
           availability: _availability,
-          notes: _notesController.text.trim().isEmpty ? null : _notesController.text.trim(),
+          notes: _notesController.text.trim().isEmpty
+              ? null
+              : _notesController.text.trim(),
         );
         await _service.updateVolunteer(updated);
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Profile updated')));
+          ScaffoldMessenger.of(context)
+              .showSnackBar(const SnackBar(content: Text('Profile updated')));
           Navigator.pop(context);
         }
       }
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('Error: $e')));
+      }
     }
     if (mounted) setState(() => _loading = false);
   }
@@ -109,24 +117,31 @@ class _AddVolunteerScreenState extends State<AddVolunteerScreen> {
             children: [
               TextFormField(
                 controller: _nameController,
-                decoration: const InputDecoration(labelText: 'Full Name', prefixIcon: Icon(Icons.person)),
-                validator: (v) => v == null || v.trim().isEmpty ? 'Required' : null,
+                decoration: const InputDecoration(
+                    labelText: 'Full Name', prefixIcon: Icon(Icons.person)),
+                validator: (v) =>
+                    v == null || v.trim().isEmpty ? 'Required' : null,
               ),
               const SizedBox(height: 16),
               TextFormField(
                 controller: _phoneController,
                 keyboardType: TextInputType.phone,
-                decoration: const InputDecoration(labelText: 'Phone Number', prefixIcon: Icon(Icons.phone)),
-                validator: (v) => v == null || v.trim().isEmpty ? 'Required' : null,
+                decoration: const InputDecoration(
+                    labelText: 'Phone Number', prefixIcon: Icon(Icons.phone)),
+                validator: (v) =>
+                    v == null || v.trim().isEmpty ? 'Required' : null,
               ),
               const SizedBox(height: 16),
               TextFormField(
                 controller: _cityController,
-                decoration: const InputDecoration(labelText: 'City', prefixIcon: Icon(Icons.location_city)),
-                validator: (v) => v == null || v.trim().isEmpty ? 'Required' : null,
+                decoration: const InputDecoration(
+                    labelText: 'City', prefixIcon: Icon(Icons.location_city)),
+                validator: (v) =>
+                    v == null || v.trim().isEmpty ? 'Required' : null,
               ),
               const SizedBox(height: 16),
-              const Text('Skills (multi select)', style: TextStyle(fontWeight: FontWeight.w500)),
+              const Text('Skills (multi select)',
+                  style: TextStyle(fontWeight: FontWeight.w500)),
               const SizedBox(height: 8),
               Wrap(
                 spacing: 8,
@@ -138,14 +153,19 @@ class _AddVolunteerScreenState extends State<AddVolunteerScreen> {
                     selected: selected,
                     onSelected: (v) {
                       setState(() {
-                        if (v) _skills.add(s); else _skills.remove(s);
+                        if (v) {
+                          _skills.add(s);
+                        } else {
+                          _skills.remove(s);
+                        }
                       });
                     },
                   );
                 }).toList(),
               ),
               const SizedBox(height: 16),
-              const Text('Availability (multi select)', style: TextStyle(fontWeight: FontWeight.w500)),
+              const Text('Availability (multi select)',
+                  style: TextStyle(fontWeight: FontWeight.w500)),
               const SizedBox(height: 8),
               Wrap(
                 spacing: 8,
@@ -157,7 +177,11 @@ class _AddVolunteerScreenState extends State<AddVolunteerScreen> {
                     selected: selected,
                     onSelected: (v) {
                       setState(() {
-                        if (v) _availability.add(a); else _availability.remove(a);
+                        if (v) {
+                          _availability.add(a);
+                        } else {
+                          _availability.remove(a);
+                        }
                       });
                     },
                   );
@@ -167,12 +191,19 @@ class _AddVolunteerScreenState extends State<AddVolunteerScreen> {
               TextFormField(
                 controller: _notesController,
                 maxLines: 3,
-                decoration: const InputDecoration(labelText: 'Notes', alignLabelWithHint: true),
+                decoration: const InputDecoration(
+                    labelText: 'Notes', alignLabelWithHint: true),
               ),
               const SizedBox(height: 24),
               ElevatedButton(
                 onPressed: _loading ? null : _submit,
-                child: _loading ? const SizedBox(height: 24, width: 24, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)) : Text(isEdit ? 'Save Changes' : 'Add Volunteer'),
+                child: _loading
+                    ? const SizedBox(
+                        height: 24,
+                        width: 24,
+                        child: CircularProgressIndicator(
+                            strokeWidth: 2, color: Colors.white))
+                    : Text(isEdit ? 'Save Changes' : 'Add Volunteer'),
               ),
             ],
           ),

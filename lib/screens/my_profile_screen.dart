@@ -38,7 +38,8 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
         body: const Center(child: CircularProgressIndicator()),
       );
     }
-    if (_profile == null || (_profile!.fullName.isEmpty && _profile!.phone.isEmpty)) {
+    if (_profile == null ||
+        (_profile!.fullName.isEmpty && _profile!.phone.isEmpty)) {
       return Scaffold(
         appBar: AppBar(title: const Text('My Profile')),
         body: Center(
@@ -52,7 +53,8 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
               ElevatedButton.icon(
                 onPressed: () => Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (_) => const _MyProfileFormScreen()),
+                  MaterialPageRoute(
+                      builder: (_) => const _MyProfileFormScreen()),
                 ).then((_) => _load()),
                 icon: const Icon(Icons.add),
                 label: const Text('Create Profile'),
@@ -90,12 +92,19 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
                       radius: 40,
                       backgroundColor: AppTheme.secondary,
                       child: Text(
-                        v.fullName.isNotEmpty ? v.fullName[0].toUpperCase() : '?',
-                        style: const TextStyle(fontSize: 32, color: Colors.white),
+                        v.fullName.isNotEmpty
+                            ? v.fullName[0].toUpperCase()
+                            : '?',
+                        style:
+                            const TextStyle(fontSize: 32, color: Colors.white),
                       ),
                     ),
                     const SizedBox(height: 16),
-                    Text(v.fullName, style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold)),
+                    Text(v.fullName,
+                        style: Theme.of(context)
+                            .textTheme
+                            .headlineSmall
+                            ?.copyWith(fontWeight: FontWeight.bold)),
                     const SizedBox(height: 8),
                     Text(v.city, style: TextStyle(color: Colors.grey.shade600)),
                   ],
@@ -103,24 +112,40 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
               ),
             ),
             const SizedBox(height: 16),
-            ListTile(leading: const Icon(Icons.phone), title: const Text('Phone'), subtitle: Text(v.phone)),
+            ListTile(
+                leading: const Icon(Icons.phone),
+                title: const Text('Phone'),
+                subtitle: Text(v.phone)),
             const Divider(),
-            ListTile(leading: const Icon(Icons.location_city), title: const Text('City'), subtitle: Text(v.city)),
+            ListTile(
+                leading: const Icon(Icons.location_city),
+                title: const Text('City'),
+                subtitle: Text(v.city)),
             const Divider(),
             ListTile(
               leading: const Icon(Icons.work_outline),
               title: const Text('Skills'),
-              subtitle: Wrap(spacing: 6, runSpacing: 6, children: v.skills.map((s) => Chip(label: Text(s))).toList()),
+              subtitle: Wrap(
+                  spacing: 6,
+                  runSpacing: 6,
+                  children: v.skills.map((s) => Chip(label: Text(s))).toList()),
             ),
             const Divider(),
             ListTile(
               leading: const Icon(Icons.schedule),
               title: const Text('Availability'),
-              subtitle: Wrap(spacing: 6, runSpacing: 6, children: v.availability.map((a) => Chip(label: Text(a))).toList()),
+              subtitle: Wrap(
+                  spacing: 6,
+                  runSpacing: 6,
+                  children:
+                      v.availability.map((a) => Chip(label: Text(a))).toList()),
             ),
             if (v.notes != null && v.notes!.isNotEmpty) ...[
               const Divider(),
-              ListTile(leading: const Icon(Icons.note), title: const Text('Notes'), subtitle: Text(v.notes!)),
+              ListTile(
+                  leading: const Icon(Icons.note),
+                  title: const Text('Notes'),
+                  subtitle: Text(v.notes!)),
             ],
           ],
         ),
@@ -178,7 +203,8 @@ class _MyProfileFormScreenState extends State<_MyProfileFormScreen> {
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
     if (_skills.isEmpty || _availability.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Select at least one skill and availability')));
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text('Select at least one skill and availability')));
       return;
     }
     setState(() => _loading = true);
@@ -189,14 +215,20 @@ class _MyProfileFormScreenState extends State<_MyProfileFormScreen> {
         city: _cityController.text.trim(),
         skills: _skills,
         availability: _availability,
-        notes: _notesController.text.trim().isEmpty ? null : _notesController.text.trim(),
+        notes: _notesController.text.trim().isEmpty
+            ? null
+            : _notesController.text.trim(),
       );
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Profile saved')));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(const SnackBar(content: Text('Profile saved')));
         Navigator.pop(context);
       }
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('Error: $e')));
+      }
     }
     if (mounted) setState(() => _loading = false);
   }
@@ -214,24 +246,31 @@ class _MyProfileFormScreenState extends State<_MyProfileFormScreen> {
             children: [
               TextFormField(
                 controller: _nameController,
-                decoration: const InputDecoration(labelText: 'Full Name', prefixIcon: Icon(Icons.person)),
-                validator: (v) => v == null || v.trim().isEmpty ? 'Required' : null,
+                decoration: const InputDecoration(
+                    labelText: 'Full Name', prefixIcon: Icon(Icons.person)),
+                validator: (v) =>
+                    v == null || v.trim().isEmpty ? 'Required' : null,
               ),
               const SizedBox(height: 16),
               TextFormField(
                 controller: _phoneController,
                 keyboardType: TextInputType.phone,
-                decoration: const InputDecoration(labelText: 'Phone', prefixIcon: Icon(Icons.phone)),
-                validator: (v) => v == null || v.trim().isEmpty ? 'Required' : null,
+                decoration: const InputDecoration(
+                    labelText: 'Phone', prefixIcon: Icon(Icons.phone)),
+                validator: (v) =>
+                    v == null || v.trim().isEmpty ? 'Required' : null,
               ),
               const SizedBox(height: 16),
               TextFormField(
                 controller: _cityController,
-                decoration: const InputDecoration(labelText: 'City', prefixIcon: Icon(Icons.location_city)),
-                validator: (v) => v == null || v.trim().isEmpty ? 'Required' : null,
+                decoration: const InputDecoration(
+                    labelText: 'City', prefixIcon: Icon(Icons.location_city)),
+                validator: (v) =>
+                    v == null || v.trim().isEmpty ? 'Required' : null,
               ),
               const SizedBox(height: 16),
-              const Text('Skills', style: TextStyle(fontWeight: FontWeight.w500)),
+              const Text('Skills',
+                  style: TextStyle(fontWeight: FontWeight.w500)),
               const SizedBox(height: 8),
               Wrap(
                 spacing: 8,
@@ -243,14 +282,19 @@ class _MyProfileFormScreenState extends State<_MyProfileFormScreen> {
                     selected: selected,
                     onSelected: (v) {
                       setState(() {
-                        if (v) _skills.add(s); else _skills.remove(s);
+                        if (v) {
+                          _skills.add(s);
+                        } else {
+                          _skills.remove(s);
+                        }
                       });
                     },
                   );
                 }).toList(),
               ),
               const SizedBox(height: 16),
-              const Text('Availability', style: TextStyle(fontWeight: FontWeight.w500)),
+              const Text('Availability',
+                  style: TextStyle(fontWeight: FontWeight.w500)),
               const SizedBox(height: 8),
               Wrap(
                 spacing: 8,
@@ -262,7 +306,11 @@ class _MyProfileFormScreenState extends State<_MyProfileFormScreen> {
                     selected: selected,
                     onSelected: (v) {
                       setState(() {
-                        if (v) _availability.add(a); else _availability.remove(a);
+                        if (v) {
+                          _availability.add(a);
+                        } else {
+                          _availability.remove(a);
+                        }
                       });
                     },
                   );
@@ -272,12 +320,19 @@ class _MyProfileFormScreenState extends State<_MyProfileFormScreen> {
               TextFormField(
                 controller: _notesController,
                 maxLines: 3,
-                decoration: const InputDecoration(labelText: 'Notes', alignLabelWithHint: true),
+                decoration: const InputDecoration(
+                    labelText: 'Notes', alignLabelWithHint: true),
               ),
               const SizedBox(height: 24),
               ElevatedButton(
                 onPressed: _loading ? null : _submit,
-                child: _loading ? const SizedBox(height: 24, width: 24, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)) : const Text('Save Profile'),
+                child: _loading
+                    ? const SizedBox(
+                        height: 24,
+                        width: 24,
+                        child: CircularProgressIndicator(
+                            strokeWidth: 2, color: Colors.white))
+                    : const Text('Save Profile'),
               ),
             ],
           ),

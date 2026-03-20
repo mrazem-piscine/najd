@@ -6,14 +6,14 @@ class SplashScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return const Scaffold(
       backgroundColor: AppTheme.primary,
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(Icons.volunteer_activism, size: 80, color: Colors.white),
-            const SizedBox(height: 24),
+            SizedBox(height: 24),
             Text(
               'Najd Volunteer',
               style: TextStyle(
@@ -22,7 +22,7 @@ class SplashScreen extends StatelessWidget {
                 color: Colors.white,
               ),
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8),
             Text(
               'Volunteer Coordination',
               style: TextStyle(
@@ -30,8 +30,8 @@ class SplashScreen extends StatelessWidget {
                 color: Colors.white70,
               ),
             ),
-            const SizedBox(height: 48),
-            const CircularProgressIndicator(color: Colors.white),
+            SizedBox(height: 48),
+            CircularProgressIndicator(color: Colors.white),
           ],
         ),
       ),

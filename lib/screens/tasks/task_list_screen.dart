@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import '../../config/theme.dart';
 import '../../models/task_model.dart';
 import '../../services/task_service.dart';
 import 'task_details_screen.dart';
@@ -31,7 +30,10 @@ class _TaskListScreenState extends State<TaskListScreen> {
       final list = await _service.getTasks(status: _filterStatus);
       if (mounted) setState(() => _tasks = list);
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('Error: $e')));
+      }
     }
     if (mounted) setState(() => _loading = false);
   }
@@ -44,7 +46,9 @@ class _TaskListScreenState extends State<TaskListScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.add),
-            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CreateTaskScreen())).then((_) => _load()),
+            onPressed: () => Navigator.push(context,
+                    MaterialPageRoute(builder: (_) => const CreateTaskScreen()))
+                .then((_) => _load()),
           ),
         ],
       ),
@@ -58,13 +62,19 @@ class _TaskListScreenState extends State<TaskListScreen> {
                 _FilterChip(
                   label: 'All',
                   selected: _filterStatus == null,
-                  onTap: () => setState(() { _filterStatus = null; _load(); }),
+                  onTap: () => setState(() {
+                    _filterStatus = null;
+                    _load();
+                  }),
                 ),
                 ...TaskStatus.values.map((s) => _FilterChip(
-                  label: s.displayName,
-                  selected: _filterStatus == s,
-                  onTap: () => setState(() { _filterStatus = s; _load(); }),
-                )),
+                      label: s.displayName,
+                      selected: _filterStatus == s,
+                      onTap: () => setState(() {
+                        _filterStatus = s;
+                        _load();
+                      }),
+                    )),
               ],
             ),
           ),
@@ -72,7 +82,9 @@ class _TaskListScreenState extends State<TaskListScreen> {
             child: _loading
                 ? const Center(child: CircularProgressIndicator())
                 : _tasks.isEmpty
-                    ? Center(child: Text('No tasks', style: TextStyle(color: Colors.grey.shade600)))
+                    ? Center(
+                        child: Text('No tasks',
+                            style: TextStyle(color: Colors.grey.shade600)))
                     : RefreshIndicator(
                         onRefresh: _load,
                         child: ListView.builder(
@@ -84,7 +96,9 @@ class _TaskListScreenState extends State<TaskListScreen> {
                               task: task,
                               onTap: () => Navigator.push(
                                 context,
-                                MaterialPageRoute(builder: (_) => TaskDetailsScreen(taskId: task.id)),
+                                MaterialPageRoute(
+                                    builder: (_) =>
+                                        TaskDetailsScreen(taskId: task.id)),
                               ).then((_) => _load()),
                             );
                           },
@@ -102,7 +116,8 @@ class _FilterChip extends StatelessWidget {
   final bool selected;
   final VoidCallback onTap;
 
-  const _FilterChip({required this.label, required this.selected, required this.onTap});
+  const _FilterChip(
+      {required this.label, required this.selected, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -145,23 +160,32 @@ class _TaskCard extends StatelessWidget {
                   Expanded(
                     child: Text(
                       task.title,
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                      style: Theme.of(context)
+                          .textTheme
+                          .titleMedium
+                          ?.copyWith(fontWeight: FontWeight.bold),
                     ),
                   ),
                   Chip(
-                    label: Text(task.status.displayName, style: const TextStyle(fontSize: 11)),
+                    label: Text(task.status.displayName,
+                        style: const TextStyle(fontSize: 11)),
                     backgroundColor: statusColor.withOpacity(0.2),
                   ),
                 ],
               ),
               const SizedBox(height: 8),
-              Text(task.description, maxLines: 2, overflow: TextOverflow.ellipsis),
+              Text(task.description,
+                  maxLines: 2, overflow: TextOverflow.ellipsis),
               const SizedBox(height: 8),
               Row(
                 children: [
-                  Icon(Icons.location_on, size: 16, color: Colors.grey.shade600),
+                  Icon(Icons.location_on,
+                      size: 16, color: Colors.grey.shade600),
                   const SizedBox(width: 4),
-                  Expanded(child: Text(task.location, style: TextStyle(fontSize: 12, color: Colors.grey.shade600))),
+                  Expanded(
+                      child: Text(task.location,
+                          style: TextStyle(
+                              fontSize: 12, color: Colors.grey.shade600))),
                 ],
               ),
               const SizedBox(height: 4),
@@ -173,7 +197,13 @@ class _TaskCard extends StatelessWidget {
                 const SizedBox(height: 8),
                 Wrap(
                   spacing: 4,
-                  children: task.requiredSkills.take(3).map((s) => Chip(label: Text(s, style: const TextStyle(fontSize: 10)), materialTapTargetSize: MaterialTapTargetSize.shrinkWrap)).toList(),
+                  children: task.requiredSkills
+                      .take(3)
+                      .map((s) => Chip(
+                          label: Text(s, style: const TextStyle(fontSize: 10)),
+                          materialTapTargetSize:
+                              MaterialTapTargetSize.shrinkWrap))
+                      .toList(),
                 ),
               ],
             ],

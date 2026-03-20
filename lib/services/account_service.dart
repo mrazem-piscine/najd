@@ -18,7 +18,7 @@ class AccountService {
         .eq('id', userId)
         .maybeSingle();
     if (response == null) return null;
-    return UserProfile.fromJson(response as Map<String, dynamic>);
+    return UserProfile.fromJson(response);
   }
 
   Future<UserProfile> getOrCreateProfile({
@@ -48,12 +48,9 @@ class AccountService {
       'updated_at': now,
     };
 
-    final response = await _client
-        .from(_profilesTable)
-        .insert(data)
-        .select()
-        .single();
-    return UserProfile.fromJson(response as Map<String, dynamic>);
+    final response =
+        await _client.from(_profilesTable).insert(data).select().single();
+    return UserProfile.fromJson(response);
   }
 
   Future<UserProfile> updateRole({
@@ -69,7 +66,7 @@ class AccountService {
         .eq('id', userId)
         .select()
         .single();
-    return UserProfile.fromJson(response as Map<String, dynamic>);
+    return UserProfile.fromJson(response);
   }
 
   Future<UserProfile> updateStatus({
@@ -85,7 +82,6 @@ class AccountService {
         .eq('id', userId)
         .select()
         .single();
-    return UserProfile.fromJson(response as Map<String, dynamic>);
+    return UserProfile.fromJson(response);
   }
 }
-

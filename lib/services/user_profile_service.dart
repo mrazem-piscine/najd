@@ -11,8 +11,9 @@ class UserProfileService {
   Future<Map<String, dynamic>?> getProfile() async {
     final userId = currentUserId;
     if (userId == null) return null;
-    final response = await _client.from(_table).select().eq('id', userId).maybeSingle();
-    return response as Map<String, dynamic>?;
+    final response =
+        await _client.from(_table).select().eq('id', userId).maybeSingle();
+    return response;
   }
 
   Future<void> upsertProfile({
@@ -47,10 +48,15 @@ class UserProfileService {
       fullName: map['full_name'] as String? ?? '',
       phone: map['phone'] as String? ?? '',
       city: map['city'] as String? ?? '',
-      skills: map['skills'] != null ? List<String>.from(map['skills'] as List) : [],
-      availability: map['availability'] != null ? List<String>.from(map['availability'] as List) : [],
+      skills:
+          map['skills'] != null ? List<String>.from(map['skills'] as List) : [],
+      availability: map['availability'] != null
+          ? List<String>.from(map['availability'] as List)
+          : [],
       notes: map['notes'] as String?,
-      createdAt: map['created_at'] != null ? DateTime.parse(map['created_at'] as String) : DateTime.now(),
+      createdAt: map['created_at'] != null
+          ? DateTime.parse(map['created_at'] as String)
+          : DateTime.now(),
     );
   }
 }

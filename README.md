@@ -73,6 +73,42 @@ If you don’t see them:
 
 7. **No Windows toolchain?** Use an **Android emulator**: run `flutter emulators` to list, then `flutter emulators --launch <emulator_id>` to start one, then `flutter run -d android`.
 
+### Option 3: Docker Dev Container
+
+Use a containerized Flutter development environment with all dependencies pre-installed.
+
+**Prerequisites:**
+- Docker Desktop installed and running
+- VS Code with Remote - Containers extension
+
+**Setup:**
+1. Clone or open the project:
+   ```bash
+   cd /path/to/najd
+   ```
+
+2. In VS Code, open the command palette (`Cmd+Shift+P` on Mac) and run:
+   ```
+   Dev Containers: Reopen in Container
+   ```
+
+3. VS Code will build the container and install all Flutter/Dart dependencies automatically.
+
+4. Once ready, run:
+   ```bash
+   flutter pub get
+   flutter run
+   ```
+
+**Available Make commands:**
+```bash
+make dev      # Set up dev environment
+make analyze  # Analyze code
+make test     # Run tests
+make clean    # Clean build artifacts
+make help     # Show all commands
+```
+
 ### Supabase (for full sign-in and data)
 
 - The app will **start and show the UI** even without Supabase.
