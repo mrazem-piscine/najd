@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../config/theme.dart';
 import '../services/volunteer_service.dart';
 import '../services/task_service.dart';
+import '../widgets/animations.dart';
+import '../widgets/app_card.dart';
 import 'volunteers/volunteer_list_screen.dart';
 import 'volunteers/add_volunteer_screen.dart';
 import 'tasks/task_list_screen.dart';
@@ -16,17 +18,35 @@ class DashboardScreen extends StatefulWidget {
   State<DashboardScreen> createState() => _DashboardScreenState();
 }
 
-class _DashboardScreenState extends State<DashboardScreen> {
+class _DashboardScreenState extends State<DashboardScreen>
+    with SingleTickerProviderStateMixin {
   int _totalVolunteers = 0;
   int _activeTasks = 0;
   int _completedTasks = 0;
   int _emergencyRequests = 0;
   bool _loading = true;
 
+  late AnimationController _counterController;
+  late Animation<double> _counterAnimation;
+
   @override
   void initState() {
     super.initState();
+    _counterController = AnimationController(
+      duration: const Duration(milliseconds: 1500),
+      vsync: this,
+    );
+    _counterAnimation = CurvedAnimation(
+      parent: _counterController,
+      curve: Curves.easeOutCubic,
+    );
     _loadStats();
+  }
+
+  @override
+  void dispose() {
+    _counterController.dispose();
+    super.dispose();
   }
 
   final VolunteerService _volunteerService = VolunteerService();
@@ -45,6 +65,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         _emergencyRequests = 0;
         _loading = false;
       });
+      _counterController.forward(from: 0);
     } catch (_) {
       setState(() => _loading = false);
     }
@@ -53,140 +74,632 @@ class _DashboardScreenState extends State<DashboardScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Najd Volunteer'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications_outlined),
-            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const NotificationsScreen())),
+      backgroundColor: AppTheme.background,
+      body: SafeArea(
+        child: RefreshIndicator(
+          onRefresh: _loadStats,
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: _loading
+                  ? const Padding(
+                      padding: EdgeInsets.only(top: 100),
+                      child: Center(child: ShimmerLoading(height: 200)),
+                    )
+                  : Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Header
+                        SlideInAnimation(
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Dashboard',
+                                    style: TextStyle(
+                                      fontSize: 28,
+                                      fontWeight: FontWeight.bold,
+                                      color: AppTheme.textPrimary,
+                                      letterSpacing: -0.5,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    'Welcome back, Admin',
+                                    style: TextStyle(
+                                      fontSize: 15,
+                                      color: AppTheme.textSecondary,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              Row(
+                                children: [
+                                  _IconButton(
+                                    icon: Icons.notifications_outlined,
+                                    onTap: () => Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (_) =>
+                                              const NotificationsScreen()),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  _IconButton(
+                                    icon: Icons.settings_outlined,
+                                    onTap: () => Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (_) => const SettingsScreen()),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        const SizedBox(height: 24),
+
+                        // Hero welcome card with animated gradient border
+                        SlideInAnimation(
+                          delay: const Duration(milliseconds: 100),
+                          child: AnimatedGradientBorder(
+                            borderRadius: 24,
+                            borderWidth: 3,
+                            child: Container(
+                              padding: const EdgeInsets.all(24),
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Row(
+                                          children: [
+                                            FloatingAnimation(
+                                              distance: 4,
+                                              child: const Icon(
+                                                Icons.favorite,
+                                                color: AppTheme.accent,
+                                                size: 28,
+                                              ),
+                                            ),
+                                            const SizedBox(width: 8),
+                                            const Text(
+                                              'Najd Volunteer',
+                                              style: TextStyle(
+                                                fontSize: 20,
+                                                fontWeight: FontWeight.bold,
+                                                color: AppTheme.textPrimary,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        const SizedBox(height: 12),
+                                        Text(
+                                          'Coordinate volunteers and manage tasks efficiently',
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            color: AppTheme.textSecondary,
+                                            height: 1.5,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  Container(
+                                    padding: const EdgeInsets.all(16),
+                                    decoration: BoxDecoration(
+                                      gradient: AppTheme.primaryGradient,
+                                      borderRadius: BorderRadius.circular(16),
+                                    ),
+                                    child: const Icon(
+                                      Icons.volunteer_activism,
+                                      color: Colors.white,
+                                      size: 32,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+
+                        const SizedBox(height: 24),
+
+                        // Stats grid with counter animations
+                        SlideInAnimation(
+                          delay: const Duration(milliseconds: 200),
+                          child: AnimatedBuilder(
+                            animation: _counterAnimation,
+                            builder: (context, child) {
+                              return Column(
+                                children: [
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: _AnimatedStatCard(
+                                          title: 'Volunteers',
+                                          value: (_totalVolunteers *
+                                                  _counterAnimation.value)
+                                              .toInt(),
+                                          icon: Icons.people,
+                                          gradient: AppTheme.primaryGradient,
+                                          trend: '+12%',
+                                        ),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: _AnimatedStatCard(
+                                          title: 'Active Tasks',
+                                          value: (_activeTasks *
+                                                  _counterAnimation.value)
+                                              .toInt(),
+                                          icon: Icons.assignment,
+                                          gradient: AppTheme.warningGradient,
+                                          trend: '+5%',
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 12),
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: _AnimatedStatCard(
+                                          title: 'Completed',
+                                          value: (_completedTasks *
+                                                  _counterAnimation.value)
+                                              .toInt(),
+                                          icon: Icons.check_circle,
+                                          gradient: AppTheme.successGradient,
+                                          trend: '+28%',
+                                        ),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: _AnimatedStatCard(
+                                          title: 'Emergency',
+                                          value: (_emergencyRequests *
+                                                  _counterAnimation.value)
+                                              .toInt(),
+                                          icon: Icons.warning_amber,
+                                          gradient: AppTheme.redGradient,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              );
+                            },
+                          ),
+                        ),
+
+                        const SizedBox(height: 28),
+
+                        // Quick actions
+                        SlideInAnimation(
+                          delay: const Duration(milliseconds: 300),
+                          child: const SectionHeader(title: 'Quick Actions'),
+                        ),
+
+                        const SizedBox(height: 12),
+
+                        SlideInAnimation(
+                          delay: const Duration(milliseconds: 350),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: _QuickActionButton(
+                                  icon: Icons.person_add,
+                                  label: 'Add Volunteer',
+                                  gradient: AppTheme.primaryGradient,
+                                  onTap: () => Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (_) =>
+                                            const AddVolunteerScreen()),
+                                  ).then((_) => _loadStats()),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: _QuickActionButton(
+                                  icon: Icons.add_task,
+                                  label: 'Create Task',
+                                  gradient: AppTheme.secondaryGradient,
+                                  onTap: () => Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (_) =>
+                                            const CreateTaskScreen()),
+                                  ).then((_) => _loadStats()),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        const SizedBox(height: 28),
+
+                        // Services section
+                        SlideInAnimation(
+                          delay: const Duration(milliseconds: 400),
+                          child: const SectionHeader(title: 'Services'),
+                        ),
+
+                        const SizedBox(height: 12),
+
+                        // Service cards
+                        SlideInAnimation(
+                          delay: const Duration(milliseconds: 450),
+                          child: _ServiceCard(
+                            icon: Icons.local_hospital,
+                            title: 'Medical Assistance',
+                            description: 'Healthcare and medical support services',
+                            gradient: AppTheme.redGradient,
+                            onTap: () {},
+                          ),
+                        ),
+
+                        const SizedBox(height: 12),
+
+                        SlideInAnimation(
+                          delay: const Duration(milliseconds: 500),
+                          child: _ServiceCard(
+                            icon: Icons.people_alt,
+                            title: 'Community Help',
+                            description: 'Support for community members in need',
+                            gradient: AppTheme.purpleGradient,
+                            onTap: () {},
+                          ),
+                        ),
+
+                        const SizedBox(height: 12),
+
+                        SlideInAnimation(
+                          delay: const Duration(milliseconds: 550),
+                          child: _ServiceCard(
+                            icon: Icons.school,
+                            title: 'Education Support',
+                            description: 'Tutoring and educational assistance',
+                            gradient: AppTheme.successGradient,
+                            onTap: () {},
+                          ),
+                        ),
+
+                        const SizedBox(height: 28),
+
+                        // Navigation cards
+                        SlideInAnimation(
+                          delay: const Duration(milliseconds: 600),
+                          child: const SectionHeader(title: 'Manage'),
+                        ),
+
+                        const SizedBox(height: 12),
+
+                        SlideInAnimation(
+                          delay: const Duration(milliseconds: 650),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: ActionCard(
+                                  title: 'Volunteers',
+                                  subtitle: 'View all volunteers',
+                                  icon: Icons.list,
+                                  iconGradient: AppTheme.primaryGradient,
+                                  onTap: () => Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (_) =>
+                                            const VolunteerListScreen()),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: ActionCard(
+                                  title: 'Tasks',
+                                  subtitle: 'View all tasks',
+                                  icon: Icons.assignment_turned_in,
+                                  iconGradient: AppTheme.secondaryGradient,
+                                  onTap: () => Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (_) => const TaskListScreen()),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        const SizedBox(height: 40),
+                      ],
+                    ),
+            ),
           ),
-          IconButton(
-            icon: const Icon(Icons.settings_outlined),
-            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SettingsScreen())),
-          ),
-        ],
-      ),
-      body: RefreshIndicator(
-        onRefresh: _loadStats,
-        child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.all(16),
-          child: _loading
-              ? const Padding(padding: EdgeInsets.only(top: 48), child: Center(child: CircularProgressIndicator()))
-              : Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Text(
-                      'Dashboard',
-                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 20),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _StatCard(
-                            title: 'Total Volunteers',
-                            value: '$_totalVolunteers',
-                            icon: Icons.people,
-                            color: AppTheme.primary,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: _StatCard(
-                            title: 'Active Tasks',
-                            value: '$_activeTasks',
-                            icon: Icons.assignment,
-                            color: Colors.orange,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _StatCard(
-                            title: 'Completed',
-                            value: '$_completedTasks',
-                            icon: Icons.check_circle,
-                            color: Colors.teal,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: _StatCard(
-                            title: 'Emergency',
-                            value: '$_emergencyRequests',
-                            icon: Icons.warning_amber,
-                            color: Colors.red,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 28),
-                    ElevatedButton.icon(
-                      onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AddVolunteerScreen())).then((_) => _loadStats()),
-                      icon: const Icon(Icons.person_add),
-                      label: const Text('Add Volunteer'),
-                      style: ElevatedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 16)),
-                    ),
-                    const SizedBox(height: 12),
-                    OutlinedButton.icon(
-                      onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CreateTaskScreen())).then((_) => _loadStats()),
-                      icon: const Icon(Icons.add_task),
-                      label: const Text('Create Task'),
-                      style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 16)),
-                    ),
-                    const SizedBox(height: 24),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: OutlinedButton.icon(
-                            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const VolunteerListScreen())),
-                            icon: const Icon(Icons.list),
-                            label: const Text('View Volunteers'),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: OutlinedButton.icon(
-                            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const TaskListScreen())),
-                            icon: const Icon(Icons.assignment_turned_in),
-                            label: const Text('View Tasks'),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
         ),
       ),
     );
   }
 }
 
-class _StatCard extends StatelessWidget {
-  final String title;
-  final String value;
+class _IconButton extends StatelessWidget {
   final IconData icon;
-  final Color color;
+  final VoidCallback onTap;
 
-  const _StatCard({required this.title, required this.value, required this.icon, required this.color});
+  const _IconButton({required this.icon, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Icon(icon, color: color, size: 28),
-            const SizedBox(height: 8),
-            Text(value, style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
-            Text(title, style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey)),
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: AppTheme.surface,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: AppTheme.cardShadow,
+          ),
+          child: Icon(icon, color: AppTheme.textSecondary, size: 22),
+        ),
+      ),
+    );
+  }
+}
+
+class _AnimatedStatCard extends StatelessWidget {
+  final String title;
+  final int value;
+  final IconData icon;
+  final LinearGradient gradient;
+  final String? trend;
+
+  const _AnimatedStatCard({
+    required this.title,
+    required this.value,
+    required this.icon,
+    required this.gradient,
+    this.trend,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: gradient,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: gradient.colors.first.withOpacity(0.3),
+            blurRadius: 15,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(icon, color: Colors.white, size: 22),
+              ),
+              if (trend != null)
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.trending_up,
+                          size: 12, color: Colors.white),
+                      const SizedBox(width: 2),
+                      Text(
+                        trend!,
+                        style: const TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Text(
+            '$value',
+            style: const TextStyle(
+              fontSize: 28,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            title,
+            style: TextStyle(
+              fontSize: 13,
+              color: Colors.white.withOpacity(0.8),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _QuickActionButton extends StatefulWidget {
+  final IconData icon;
+  final String label;
+  final LinearGradient gradient;
+  final VoidCallback onTap;
+
+  const _QuickActionButton({
+    required this.icon,
+    required this.label,
+    required this.gradient,
+    required this.onTap,
+  });
+
+  @override
+  State<_QuickActionButton> createState() => _QuickActionButtonState();
+}
+
+class _QuickActionButtonState extends State<_QuickActionButton> {
+  bool _isPressed = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTapDown: (_) => setState(() => _isPressed = true),
+      onTapUp: (_) => setState(() => _isPressed = false),
+      onTapCancel: () => setState(() => _isPressed = false),
+      onTap: widget.onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        transform: Matrix4.identity()..scale(_isPressed ? 0.97 : 1.0),
+        padding: const EdgeInsets.symmetric(vertical: 18),
+        decoration: BoxDecoration(
+          gradient: widget.gradient,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: widget.gradient.colors.first.withOpacity(0.4),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
           ],
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(widget.icon, color: Colors.white, size: 20),
+            const SizedBox(width: 8),
+            Text(
+              widget.label,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ServiceCard extends StatefulWidget {
+  final IconData icon;
+  final String title;
+  final String description;
+  final LinearGradient gradient;
+  final VoidCallback onTap;
+
+  const _ServiceCard({
+    required this.icon,
+    required this.title,
+    required this.description,
+    required this.gradient,
+    required this.onTap,
+  });
+
+  @override
+  State<_ServiceCard> createState() => _ServiceCardState();
+}
+
+class _ServiceCardState extends State<_ServiceCard> {
+  bool _isHovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        transform: Matrix4.identity()
+          ..translate(0.0, _isHovered ? -2.0 : 0.0),
+        decoration: BoxDecoration(
+          color: AppTheme.surface,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: _isHovered ? AppTheme.cardShadowHover : AppTheme.cardShadow,
+        ),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: widget.onTap,
+            borderRadius: BorderRadius.circular(20),
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      gradient: widget.gradient,
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: Icon(widget.icon, color: Colors.white, size: 24),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          widget.title,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: AppTheme.textPrimary,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          widget.description,
+                          style: const TextStyle(
+                            fontSize: 13,
+                            color: AppTheme.textSecondary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Icon(
+                    Icons.arrow_forward_ios,
+                    size: 16,
+                    color: AppTheme.textLight,
+                  ),
+                ],
+              ),
+            ),
+          ),
         ),
       ),
     );

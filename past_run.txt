@@ -1,0 +1,69 @@
+
+# 1. In VS Code, open command palette
+Cmd+Shift+P
+
+# 2. Run this command
+Dev Containers: Reopen in Container
+
+# 3. Container builds, dependencies install automatically
+# 4. Then run:
+flutter pub get
+flutter run
+
+
+Option 1: Run as web app (easiest in Docker)
+
+
+flutter run -d web-server --web-port 8080 --web-hostname 0.0.0.0
+Then open http://localhost:8080 in your browser. Port 8080 is already forwarded in the devcontainer config.
+
+Option 2: Forward your host display (X11)
+
+On your host machine run:
+
+
+xhost +local:docker
+Then re-run with DISPLAY set:
+
+
+DISPLAY=:0 flutter run -d linux
+Option 1 is simpler — give it a try.
+
+
+
+
+
+
+
+
+---------------------------------------------
+
+
+Run Linux app:
+
+
+Xvfb :99 -screen 0 1280x800x24 &
+DISPLAY=:99 flutter run -d linux
+Android
+Option A: Physical device (recommended)
+
+On your phone: enable Developer Options → USB Debugging, then connect via USB. Run on your host machine (not inside Docker):
+
+
+flutter run -d android
+Or connect wirelessly — on the phone go to Developer Options → Wireless debugging, then:
+
+
+adb connect <phone-ip>:5555
+flutter run -d android
+Option B: Emulator
+
+Android emulators need hardware virtualization (KVM), which usually isn't available inside Docker. Check if it's available:
+
+
+ls /dev/kvm
+If it exists, install the Android SDK and create an emulator. If not, use a physical device or run on web for testing:
+
+
+flutter run -d web-server --web-port 8080 --web-hostname 0.0.0.0
+
