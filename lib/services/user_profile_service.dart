@@ -23,6 +23,9 @@ class UserProfileService {
     required List<String> skills,
     required List<String> availability,
     String? notes,
+    bool shareLocationAlways = false,
+    double? latitude,
+    double? longitude,
   }) async {
     final userId = currentUserId;
     if (userId == null) throw Exception('Not authenticated');
@@ -35,6 +38,9 @@ class UserProfileService {
       'skills': skills,
       'availability': availability,
       'notes': notes,
+      'share_location_always': shareLocationAlways,
+      'latitude': latitude,
+      'longitude': longitude,
       'updated_at': now,
     };
     await _client.from(_table).upsert(data, onConflict: 'id');
@@ -54,6 +60,9 @@ class UserProfileService {
           ? List<String>.from(map['availability'] as List)
           : [],
       notes: map['notes'] as String?,
+      shareLocationAlways: map['share_location_always'] as bool? ?? false,
+      latitude: map['latitude'] as double?,
+      longitude: map['longitude'] as double?,
       createdAt: map['created_at'] != null
           ? DateTime.parse(map['created_at'] as String)
           : DateTime.now(),

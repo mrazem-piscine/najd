@@ -33,7 +33,8 @@ class _VolunteerLayoutState extends State<VolunteerLayout> {
         greeting: _getGreeting(),
       ),
       const _VolunteerTasksScreen(),
-      const _VolunteerAvailabilityScreen(),
+      // COMMENTED OUT: Schedule page - temporarily disabled for later use
+      // const _VolunteerAvailabilityScreen(),
       const _ContactSupportScreen(),
       const MyProfileScreen(),
     ];
@@ -59,7 +60,8 @@ class _ModernBottomNav extends StatelessWidget {
     final items = [
       _NavItem(Icons.home_outlined, Icons.home, 'Home'),
       _NavItem(Icons.assignment_outlined, Icons.assignment, 'Tasks'),
-      _NavItem(Icons.schedule_outlined, Icons.schedule, 'Schedule'),
+      // COMMENTED OUT: Schedule nav item - temporarily disabled for later use
+      // _NavItem(Icons.schedule_outlined, Icons.schedule, 'Schedule'),
       _NavItem(Icons.support_agent_outlined, Icons.support_agent, 'Support'),
       _NavItem(Icons.person_outline, Icons.person, 'Profile'),
     ];
@@ -458,10 +460,10 @@ class _VolunteerHomeScreenState extends State<_VolunteerHomeScreen>
                     const SizedBox(width: 12),
                     Expanded(
                       child: _QuickActionCard(
-                        icon: Icons.event_available,
-                        label: 'Availability',
-                        gradient: AppTheme.successGradient,
-                        onTap: () => widget.onNavigateToTab(2),
+                        icon: Icons.person,
+                        label: 'Profile',
+                        gradient: AppTheme.redGradient,
+                        onTap: () => widget.onNavigateToTab(3), // Updated index (was 4)
                       ),
                     ),
                   ],
@@ -476,19 +478,32 @@ class _VolunteerHomeScreenState extends State<_VolunteerHomeScreen>
                   children: [
                     Expanded(
                       child: _QuickActionCard(
-                        icon: Icons.person,
-                        label: 'Profile',
-                        gradient: AppTheme.redGradient,
-                        onTap: () => widget.onNavigateToTab(4),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: _QuickActionCard(
                         icon: Icons.support_agent,
                         label: 'Support',
                         gradient: AppTheme.pinkGradient,
-                        onTap: () => widget.onNavigateToTab(3),
+                        onTap: () => widget.onNavigateToTab(2), // Updated index (was 3)
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    // COMMENTED OUT: Availability quick action - temporarily disabled
+                    // Expanded(
+                    //   child: _QuickActionCard(
+                    //     icon: Icons.event_available,
+                    //     label: 'Availability',
+                    //     gradient: AppTheme.successGradient,
+                    //     onTap: () => widget.onNavigateToTab(2),
+                    //   ),
+                    // ),
+                    Expanded(
+                      child: _QuickActionCard(
+                        icon: Icons.notifications,
+                        label: 'Alerts',
+                        gradient: AppTheme.successGradient,
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (_) => const NotificationsScreen()),
+                        ),
                       ),
                     ),
                   ],
@@ -558,7 +573,7 @@ class _VolunteerHomeScreenState extends State<_VolunteerHomeScreen>
               SlideInAnimation(
                 delay: const Duration(milliseconds: 500),
                 child: GestureDetector(
-                  onTap: () => widget.onNavigateToTab(3),
+                  onTap: () => widget.onNavigateToTab(2), // Updated index (was 3)
                   child: Container(
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
@@ -824,14 +839,15 @@ class _VolunteerTasksScreen extends StatelessWidget {
   }
 }
 
-class _VolunteerAvailabilityScreen extends StatelessWidget {
-  const _VolunteerAvailabilityScreen();
-
-  @override
-  Widget build(BuildContext context) {
-    return const MyProfileScreen();
-  }
-}
+// COMMENTED OUT: Schedule/Availability screen - temporarily disabled for later use
+// class _VolunteerAvailabilityScreen extends StatelessWidget {
+//   const _VolunteerAvailabilityScreen();
+//
+//   @override
+//   Widget build(BuildContext context) {
+//     return const MyProfileScreen();
+//   }
+// }
 
 class _ContactSupportScreen extends StatefulWidget {
   const _ContactSupportScreen();

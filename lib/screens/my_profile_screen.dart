@@ -1,4 +1,8 @@
+import 'dart:io' show File;
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:image_picker/image_picker.dart';
 import '../config/theme.dart';
 import '../models/volunteer.dart';
 import '../services/user_profile_service.dart';
@@ -13,8 +17,10 @@ class MyProfileScreen extends StatefulWidget {
 
 class _MyProfileScreenState extends State<MyProfileScreen> {
   final UserProfileService _profileService = UserProfileService();
+  final ImagePicker _picker = ImagePicker();
   Volunteer? _profile;
   bool _loading = true;
+  XFile? _profileImage;
 
   @override
   void initState() {
@@ -29,6 +35,132 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
       if (mounted) setState(() => _profile = v);
     } catch (_) {}
     if (mounted) setState(() => _loading = false);
+  }
+
+  Future<void> _pickImage() async {
+    // Photo upload is only available on mobile apps (iOS/Android)
+    if (kIsWeb) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Photo upload is available on the mobile app'),
+          backgroundColor: AppTheme.info,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ),
+      );
+      return;
+    }
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppTheme.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: AppTheme.textLight.withOpacity(0.3),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 20),
+              const Text(
+                'Change Profile Photo',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: AppTheme.textPrimary,
+                ),
+              ),
+              const SizedBox(height: 20),
+              ListTile(
+                leading: Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: AppTheme.primary.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(Icons.camera_alt, color: AppTheme.primary),
+                ),
+                title: const Text('Take Photo'),
+                onTap: () async {
+                  Navigator.pop(context);
+                  try {
+                    final XFile? photo = await _picker.pickImage(
+                      source: ImageSource.camera,
+                      imageQuality: 80,
+                    );
+                    if (photo != null && mounted) {
+                      setState(() => _profileImage = photo);
+                    }
+                  } catch (e) {
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Camera not available: $e')),
+                      );
+                    }
+                  }
+                },
+              ),
+              ListTile(
+                leading: Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: AppTheme.secondary.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(Icons.photo_library, color: AppTheme.secondary),
+                ),
+                title: const Text('Choose from Gallery'),
+                onTap: () async {
+                  Navigator.pop(context);
+                  try {
+                    final XFile? image = await _picker.pickImage(
+                      source: ImageSource.gallery,
+                      imageQuality: 80,
+                    );
+                    if (image != null && mounted) {
+                      setState(() => _profileImage = image);
+                    }
+                  } catch (e) {
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Could not open gallery: $e')),
+                      );
+                    }
+                  }
+                },
+              ),
+              if (_profileImage != null)
+                ListTile(
+                  leading: Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: AppTheme.error.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(Icons.delete, color: AppTheme.error),
+                  ),
+                  title: const Text('Remove Photo'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    setState(() => _profileImage = null);
+                  },
+                ),
+              const SizedBox(height: 10),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   @override
@@ -175,34 +307,72 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
                         ),
                       ),
                     ),
-                    // Avatar
-                    Container(
-                      padding: const EdgeInsets.all(4),
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border:
-                            Border.all(color: Colors.white.withOpacity(0.3), width: 3),
-                      ),
-                      child: Container(
-                        padding: const EdgeInsets.all(4),
-                        decoration: const BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Colors.white,
-                        ),
-                        child: CircleAvatar(
-                          radius: 50,
-                          backgroundColor: AppTheme.accent,
-                          child: Text(
-                            v.fullName.isNotEmpty
-                                ? v.fullName[0].toUpperCase()
-                                : '?',
-                            style: const TextStyle(
-                              fontSize: 40,
-                              fontWeight: FontWeight.bold,
-                              color: AppTheme.textPrimary,
+                    // Avatar with photo option
+                    GestureDetector(
+                      onTap: _pickImage,
+                      child: Stack(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border:
+                                  Border.all(color: Colors.white.withOpacity(0.3), width: 3),
+                            ),
+                            child: Container(
+                              padding: const EdgeInsets.all(4),
+                              decoration: const BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: Colors.white,
+                              ),
+                              child: CircleAvatar(
+                                radius: 50,
+                                backgroundColor: AppTheme.accent,
+                                backgroundImage: _profileImage != null
+                                    ? (kIsWeb
+                                        ? NetworkImage(_profileImage!.path)
+                                        : FileImage(File(_profileImage!.path)) as ImageProvider)
+                                    : null,
+                                child: _profileImage == null
+                                    ? Text(
+                                        v.fullName.isNotEmpty
+                                            ? v.fullName[0].toUpperCase()
+                                            : '?',
+                                        style: const TextStyle(
+                                          fontSize: 40,
+                                          fontWeight: FontWeight.bold,
+                                          color: AppTheme.textPrimary,
+                                        ),
+                                      )
+                                    : null,
+                              ),
                             ),
                           ),
-                        ),
+                          // Camera icon overlay
+                          Positioned(
+                            bottom: 0,
+                            right: 0,
+                            child: Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: AppTheme.primary,
+                                shape: BoxShape.circle,
+                                border: Border.all(color: Colors.white, width: 2),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.2),
+                                    blurRadius: 4,
+                                  ),
+                                ],
+                              ),
+                              child: const Icon(
+                                Icons.camera_alt,
+                                color: Colors.white,
+                                size: 18,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                     const SizedBox(height: 16),
@@ -362,6 +532,65 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
                     ),
                   ],
 
+                  const SizedBox(height: 16),
+
+                  // Location sharing status
+                  SlideInAnimation(
+                    delay: const Duration(milliseconds: 500),
+                    child: _ProfileSection(
+                      title: 'Location Settings',
+                      icon: Icons.location_on,
+                      children: [
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 14, vertical: 8),
+                              decoration: BoxDecoration(
+                                color: v.shareLocationAlways
+                                    ? AppTheme.success.withOpacity(0.1)
+                                    : AppTheme.textLight.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(
+                                  color: v.shareLocationAlways
+                                      ? AppTheme.success.withOpacity(0.3)
+                                      : AppTheme.textLight.withOpacity(0.3),
+                                ),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    v.shareLocationAlways
+                                        ? Icons.location_on
+                                        : Icons.location_off,
+                                    size: 14,
+                                    color: v.shareLocationAlways
+                                        ? AppTheme.success
+                                        : AppTheme.textLight,
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    v.shareLocationAlways
+                                        ? 'Location Sharing Active'
+                                        : 'Location Sharing Off',
+                                    style: TextStyle(
+                                      color: v.shareLocationAlways
+                                          ? AppTheme.success
+                                          : AppTheme.textLight,
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+
                   const SizedBox(height: 24),
                 ],
               ),
@@ -484,11 +713,18 @@ class _MyProfileFormScreenState extends State<_MyProfileFormScreen> {
   final UserProfileService _profileService = UserProfileService();
   final _nameController = TextEditingController();
   final _phoneController = TextEditingController();
-  final _cityController = TextEditingController();
   final _notesController = TextEditingController();
+  final _citySearchController = TextEditingController();
+  String? _selectedCity;
+  List<String> _filteredCities = [];
+  bool _showCityDropdown = false;
   List<String> _skills = [];
   List<String> _availability = [];
+  bool _shareLocationAlways = false;
+  double? _latitude;
+  double? _longitude;
   bool _loading = false;
+  bool _gettingLocation = false;
 
   @override
   void initState() {
@@ -501,11 +737,120 @@ class _MyProfileFormScreenState extends State<_MyProfileFormScreen> {
     if (v != null && mounted) {
       _nameController.text = v.fullName;
       _phoneController.text = v.phone;
-      _cityController.text = v.city;
+      _selectedCity = v.city.isNotEmpty ? v.city : null;
+      _citySearchController.text = v.city;
       _notesController.text = v.notes ?? '';
       _skills = List.from(v.skills);
       _availability = List.from(v.availability);
+      _shareLocationAlways = v.shareLocationAlways;
+      _latitude = v.latitude;
+      _longitude = v.longitude;
       setState(() {});
+    }
+  }
+
+  void _filterCities(String query) {
+    if (query.isEmpty) {
+      setState(() {
+        _filteredCities = [];
+        _showCityDropdown = false;
+      });
+      return;
+    }
+    final filtered = cities
+        .where((city) => city.toLowerCase().contains(query.toLowerCase()))
+        .toList();
+    setState(() {
+      _filteredCities = filtered;
+      _showCityDropdown = filtered.isNotEmpty;
+    });
+  }
+
+  void _selectCity(String city) {
+    setState(() {
+      _selectedCity = city;
+      _citySearchController.text = city;
+      _showCityDropdown = false;
+      _filteredCities = [];
+    });
+  }
+
+  Future<void> _getCurrentLocation() async {
+    setState(() => _gettingLocation = true);
+    try {
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: const Text('Location services are disabled'),
+            backgroundColor: AppTheme.warning,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ));
+        }
+        return;
+      }
+
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+              content: const Text('Location permission denied'),
+              backgroundColor: AppTheme.warning,
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ));
+          }
+          return;
+        }
+      }
+
+      if (permission == LocationPermission.deniedForever) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: const Text('Location permissions are permanently denied'),
+            backgroundColor: AppTheme.error,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ));
+        }
+        return;
+      }
+
+      final position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+      );
+      if (mounted) {
+        setState(() {
+          _latitude = position.latitude;
+          _longitude = position.longitude;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: const Row(
+            children: [
+              Icon(Icons.check_circle, color: Colors.white),
+              SizedBox(width: 12),
+              Text('Location updated successfully'),
+            ],
+          ),
+          backgroundColor: AppTheme.success,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ));
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('Error getting location: $e'),
+          backgroundColor: AppTheme.error,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ));
+      }
+    } finally {
+      if (mounted) setState(() => _gettingLocation = false);
     }
   }
 
@@ -513,13 +858,22 @@ class _MyProfileFormScreenState extends State<_MyProfileFormScreen> {
   void dispose() {
     _nameController.dispose();
     _phoneController.dispose();
-    _cityController.dispose();
+    _citySearchController.dispose();
     _notesController.dispose();
     super.dispose();
   }
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
+    if (_selectedCity == null || _selectedCity!.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: const Text('Please select a valid city from the list'),
+        backgroundColor: AppTheme.warning,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ));
+      return;
+    }
     if (_skills.isEmpty || _availability.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: const Text('Select at least one skill and availability'),
@@ -534,12 +888,15 @@ class _MyProfileFormScreenState extends State<_MyProfileFormScreen> {
       await _profileService.upsertProfile(
         fullName: _nameController.text.trim(),
         phone: _phoneController.text.trim(),
-        city: _cityController.text.trim(),
+        city: _selectedCity!,
         skills: _skills,
         availability: _availability,
         notes: _notesController.text.trim().isEmpty
             ? null
             : _notesController.text.trim(),
+        shareLocationAlways: _shareLocationAlways,
+        latitude: _latitude,
+        longitude: _longitude,
       );
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -576,6 +933,10 @@ class _MyProfileFormScreenState extends State<_MyProfileFormScreen> {
     return Scaffold(
       backgroundColor: AppTheme.background,
       appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios),
+          onPressed: () => Navigator.pop(context),
+        ),
         title: const Text('Edit Profile'),
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -608,12 +969,69 @@ class _MyProfileFormScreenState extends State<_MyProfileFormScreen> {
                         v == null || v.trim().isEmpty ? 'Required' : null,
                   ),
                   const SizedBox(height: 16),
-                  _ModernTextField(
-                    controller: _cityController,
-                    label: 'City',
-                    icon: Icons.location_city,
-                    validator: (v) =>
-                        v == null || v.trim().isEmpty ? 'Required' : null,
+                  // City search field
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      TextFormField(
+                        controller: _citySearchController,
+                        onChanged: _filterCities,
+                        onTap: () {
+                          if (_citySearchController.text.isNotEmpty) {
+                            _filterCities(_citySearchController.text);
+                          }
+                        },
+                        decoration: InputDecoration(
+                          labelText: 'City',
+                          prefixIcon: const Icon(Icons.location_city, color: AppTheme.primary),
+                          suffixIcon: _selectedCity != null
+                              ? const Icon(Icons.check_circle, color: AppTheme.success)
+                              : null,
+                          filled: true,
+                          fillColor: AppTheme.surfaceLight,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            borderSide: BorderSide.none,
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            borderSide: const BorderSide(color: AppTheme.primary, width: 2),
+                          ),
+                          hintText: 'Search for your city...',
+                        ),
+                        validator: (v) {
+                          if (_selectedCity == null || _selectedCity!.isEmpty) {
+                            return 'Please select a city from the list';
+                          }
+                          return null;
+                        },
+                      ),
+                      if (_showCityDropdown && _filteredCities.isNotEmpty)
+                        Container(
+                          margin: const EdgeInsets.only(top: 4),
+                          constraints: const BoxConstraints(maxHeight: 200),
+                          decoration: BoxDecoration(
+                            color: AppTheme.surface,
+                            borderRadius: BorderRadius.circular(12),
+                            boxShadow: AppTheme.cardShadow,
+                          ),
+                          child: ListView.builder(
+                            shrinkWrap: true,
+                            itemCount: _filteredCities.length,
+                            itemBuilder: (context, index) {
+                              final city = _filteredCities[index];
+                              return ListTile(
+                                leading: const Icon(Icons.location_on, color: AppTheme.primary),
+                                title: Text(city),
+                                onTap: () => _selectCity(city),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                    ],
                   ),
                 ],
               ),
@@ -741,6 +1159,145 @@ class _MyProfileFormScreenState extends State<_MyProfileFormScreen> {
                         borderSide:
                             const BorderSide(color: AppTheme.primary, width: 2),
                       ),
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 24),
+
+              // Location sharing section
+              _FormSection(
+                title: 'Location Settings',
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: AppTheme.surfaceLight,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Column(
+                      children: [
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                color: _shareLocationAlways
+                                    ? AppTheme.success.withOpacity(0.1)
+                                    : AppTheme.primary.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Icon(
+                                Icons.location_on,
+                                color: _shareLocationAlways
+                                    ? AppTheme.success
+                                    : AppTheme.primary,
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    'Share Location Always',
+                                    style: TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w600,
+                                      color: AppTheme.textPrimary,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    'Allow the system to track your location for better task matching',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: AppTheme.textSecondary,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Switch(
+                              value: _shareLocationAlways,
+                              onChanged: (value) {
+                                setState(() => _shareLocationAlways = value);
+                                if (value && _latitude == null) {
+                                  _getCurrentLocation();
+                                }
+                              },
+                              activeColor: AppTheme.success,
+                            ),
+                          ],
+                        ),
+                        if (_shareLocationAlways) ...[
+                          const SizedBox(height: 16),
+                          const Divider(),
+                          const SizedBox(height: 16),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      _latitude != null && _longitude != null
+                                          ? 'Location: ${_latitude!.toStringAsFixed(4)}, ${_longitude!.toStringAsFixed(4)}'
+                                          : 'Location not set',
+                                      style: const TextStyle(
+                                        fontSize: 13,
+                                        color: AppTheme.textSecondary,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Container(
+                                decoration: BoxDecoration(
+                                  gradient: AppTheme.primaryGradient,
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Material(
+                                  color: Colors.transparent,
+                                  child: InkWell(
+                                    onTap: _gettingLocation ? null : _getCurrentLocation,
+                                    borderRadius: BorderRadius.circular(12),
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 16, vertical: 10),
+                                      child: _gettingLocation
+                                          ? const SizedBox(
+                                              height: 18,
+                                              width: 18,
+                                              child: CircularProgressIndicator(
+                                                strokeWidth: 2,
+                                                color: Colors.white,
+                                              ),
+                                            )
+                                          : const Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                Icon(Icons.my_location,
+                                                    color: Colors.white, size: 18),
+                                                SizedBox(width: 8),
+                                                Text(
+                                                  'Update',
+                                                  style: TextStyle(
+                                                    color: Colors.white,
+                                                    fontWeight: FontWeight.w600,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ],
                     ),
                   ),
                 ],

@@ -6,6 +6,9 @@ class Volunteer {
   final List<String> skills;
   final List<String> availability;
   final String? notes;
+  final bool shareLocationAlways;
+  final double? latitude;
+  final double? longitude;
   final DateTime createdAt;
 
   Volunteer({
@@ -16,6 +19,9 @@ class Volunteer {
     required this.skills,
     required this.availability,
     this.notes,
+    this.shareLocationAlways = false,
+    this.latitude,
+    this.longitude,
     required this.createdAt,
   });
 
@@ -32,6 +38,9 @@ class Volunteer {
           ? List<String>.from(json['availability'] as List)
           : [],
       notes: json['notes'] as String?,
+      shareLocationAlways: json['share_location_always'] as bool? ?? false,
+      latitude: json['latitude'] as double?,
+      longitude: json['longitude'] as double?,
       createdAt: json['created_at'] != null
           ? DateTime.parse(json['created_at'] as String)
           : DateTime.now(),
@@ -47,6 +56,9 @@ class Volunteer {
       'skills': skills,
       'availability': availability,
       'notes': notes,
+      'share_location_always': shareLocationAlways,
+      'latitude': latitude,
+      'longitude': longitude,
       'created_at': createdAt.toIso8601String(),
     };
   }
@@ -59,6 +71,9 @@ class Volunteer {
     List<String>? skills,
     List<String>? availability,
     String? notes,
+    bool? shareLocationAlways,
+    double? latitude,
+    double? longitude,
     DateTime? createdAt,
   }) {
     return Volunteer(
@@ -69,19 +84,21 @@ class Volunteer {
       skills: skills ?? this.skills,
       availability: availability ?? this.availability,
       notes: notes ?? this.notes,
+      shareLocationAlways: shareLocationAlways ?? this.shareLocationAlways,
+      latitude: latitude ?? this.latitude,
+      longitude: longitude ?? this.longitude,
       createdAt: createdAt ?? this.createdAt,
     );
   }
 }
 
 const List<String> skillOptions = [
-  'Medical',
-  'Logistics',
-  'Driving',
+  'First Aid',
+  'Maintenance',
+  'Transportation',
+  'Psychological Support',
   'Translation',
-  'Media',
-  'Technical',
-  'General Help',
+  'Aid Distribution',
 ];
 
 const List<String> availabilityOptions = [
@@ -90,4 +107,54 @@ const List<String> availabilityOptions = [
   'Evening',
   'Weekends',
   'Emergency Only',
+];
+
+/// List of cities in Israel and Palestine for city selection
+const List<String> cities = [
+  // Palestinian Cities
+  'Gaza',
+  'Gaza City',
+  'Khan Yunis',
+  'Rafah',
+  'Jabalia',
+  'Deir al-Balah',
+  'Beit Hanoun',
+  'Beit Lahia',
+  'Nuseirat',
+  'Ramallah',
+  'Nablus',
+  'Hebron',
+  'Bethlehem',
+  'Jenin',
+  'Tulkarm',
+  'Qalqilya',
+  'Jericho',
+  'Salfit',
+  'Tubas',
+  // Israeli Cities
+  'Jerusalem',
+  'Tel Aviv',
+  'Haifa',
+  'Rishon LeZion',
+  'Petah Tikva',
+  'Ashdod',
+  'Netanya',
+  'Beersheba',
+  'Holon',
+  'Bnei Brak',
+  'Ramat Gan',
+  'Ashkelon',
+  'Rehovot',
+  'Bat Yam',
+  'Herzliya',
+  'Kfar Saba',
+  'Hadera',
+  'Modiin',
+  'Nazareth',
+  'Lod',
+  'Ramleh',
+  'Acre',
+  'Eilat',
+  'Tiberias',
+  'Safed',
 ];

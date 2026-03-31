@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../config/theme.dart';
 import '../../models/volunteer.dart';
 import '../../services/volunteer_service.dart';
 
@@ -17,8 +16,11 @@ class _AddVolunteerScreenState extends State<AddVolunteerScreen> {
   final VolunteerService _service = VolunteerService();
   final _nameController = TextEditingController();
   final _phoneController = TextEditingController();
-  final _cityController = TextEditingController();
+  final _citySearchController = TextEditingController();
   final _notesController = TextEditingController();
+  String? _selectedCity;
+  List<String> _filteredCities = [];
+  bool _showCityDropdown = false;
   List<String> _skills = [];
   List<String> _availability = [];
   bool _loading = false;
@@ -30,7 +32,8 @@ class _AddVolunteerScreenState extends State<AddVolunteerScreen> {
       final v = widget.editVolunteer!;
       _nameController.text = v.fullName;
       _phoneController.text = v.phone;
-      _cityController.text = v.city;
+      _selectedCity = v.city.isNotEmpty ? v.city : null;
+      _citySearchController.text = v.city;
       _notesController.text = v.notes ?? '';
       _skills = List.from(v.skills);
       _availability = List.from(v.availability);
@@ -41,13 +44,44 @@ class _AddVolunteerScreenState extends State<AddVolunteerScreen> {
   void dispose() {
     _nameController.dispose();
     _phoneController.dispose();
-    _cityController.dispose();
+    _citySearchController.dispose();
     _notesController.dispose();
     super.dispose();
   }
 
+  void _filterCities(String query) {
+    if (query.isEmpty) {
+      setState(() {
+        _filteredCities = [];
+        _showCityDropdown = false;
+      });
+      return;
+    }
+    final filtered = cities
+        .where((city) => city.toLowerCase().contains(query.toLowerCase()))
+        .toList();
+    setState(() {
+      _filteredCities = filtered;
+      _showCityDropdown = filtered.isNotEmpty;
+    });
+  }
+
+  void _selectCity(String city) {
+    setState(() {
+      _selectedCity = city;
+      _citySearchController.text = city;
+      _showCityDropdown = false;
+      _filteredCities = [];
+    });
+  }
+
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
+    if (_selectedCity == null || _selectedCity!.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Please select a valid city from the list')));
+      return;
+    }
     if (_skills.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Select at least one skill')));
@@ -78,7 +112,7 @@ class _AddVolunteerScreenState extends State<AddVolunteerScreen> {
         final updated = widget.editVolunteer!.copyWith(
           fullName: _nameController.text.trim(),
           phone: _phoneController.text.trim(),
-          city: _cityController.text.trim(),
+          city: _selectedCity!,
           skills: _skills,
           availability: _availability,
           notes: _notesController.text.trim().isEmpty
@@ -106,6 +140,10 @@ class _AddVolunteerScreenState extends State<AddVolunteerScreen> {
     final isEdit = widget.editVolunteer != null;
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios),
+          onPressed: () => Navigator.pop(context),
+        ),
         title: Text(isEdit ? 'Edit Volunteer' : 'Add Volunteer'),
       ),
       body: SingleChildScrollView(
@@ -132,12 +170,61 @@ class _AddVolunteerScreenState extends State<AddVolunteerScreen> {
                     v == null || v.trim().isEmpty ? 'Required' : null,
               ),
               const SizedBox(height: 16),
-              TextFormField(
-                controller: _cityController,
-                decoration: const InputDecoration(
-                    labelText: 'City', prefixIcon: Icon(Icons.location_city)),
-                validator: (v) =>
-                    v == null || v.trim().isEmpty ? 'Required' : null,
+              // City search field
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  TextFormField(
+                    controller: _citySearchController,
+                    onChanged: _filterCities,
+                    onTap: () {
+                      if (_citySearchController.text.isNotEmpty) {
+                        _filterCities(_citySearchController.text);
+                      }
+                    },
+                    decoration: InputDecoration(
+                      labelText: 'City',
+                      prefixIcon: const Icon(Icons.location_city),
+                      suffixIcon: _selectedCity != null
+                          ? const Icon(Icons.check_circle, color: Colors.green)
+                          : null,
+                      hintText: 'Search for your city...',
+                    ),
+                    validator: (v) {
+                      if (_selectedCity == null || _selectedCity!.isEmpty) {
+                        return 'Please select a city from the list';
+                      }
+                      return null;
+                    },
+                  ),
+                  if (_showCityDropdown && _filteredCities.isNotEmpty)
+                    Container(
+                      margin: const EdgeInsets.only(top: 4),
+                      constraints: const BoxConstraints(maxHeight: 200),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).cardColor,
+                        borderRadius: BorderRadius.circular(8),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.1),
+                            blurRadius: 8,
+                          ),
+                        ],
+                      ),
+                      child: ListView.builder(
+                        shrinkWrap: true,
+                        itemCount: _filteredCities.length,
+                        itemBuilder: (context, index) {
+                          final city = _filteredCities[index];
+                          return ListTile(
+                            leading: const Icon(Icons.location_on),
+                            title: Text(city),
+                            onTap: () => _selectCity(city),
+                          );
+                        },
+                      ),
+                    ),
+                ],
               ),
               const SizedBox(height: 16),
               const Text('Skills (multi select)',

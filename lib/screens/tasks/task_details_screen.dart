@@ -66,13 +66,25 @@ class _TaskDetailsScreenState extends State<TaskDetailsScreen> {
   Widget build(BuildContext context) {
     if (_loading) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Task')),
+        appBar: AppBar(
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios),
+            onPressed: () => Navigator.pop(context),
+          ),
+          title: const Text('Task'),
+        ),
         body: const Center(child: CircularProgressIndicator()),
       );
     }
     if (_task == null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Task')),
+        appBar: AppBar(
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios),
+            onPressed: () => Navigator.pop(context),
+          ),
+          title: const Text('Task'),
+        ),
         body: const Center(child: Text('Task not found')),
       );
     }
@@ -84,6 +96,10 @@ class _TaskDetailsScreenState extends State<TaskDetailsScreen> {
             : Colors.grey;
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios),
+          onPressed: () => Navigator.pop(context),
+        ),
         title: const Text('Task Details'),
         actions: [
           if (task.status != TaskStatus.completed)

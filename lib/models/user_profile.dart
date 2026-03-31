@@ -9,6 +9,9 @@ class UserProfile {
   final List<String> skills;
   final List<String> availability;
   final String? notes;
+  final bool shareLocationAlways;
+  final double? latitude;
+  final double? longitude;
   final UserRole role;
   final String status;
   final DateTime createdAt;
@@ -23,6 +26,9 @@ class UserProfile {
     required this.skills,
     required this.availability,
     required this.notes,
+    this.shareLocationAlways = false,
+    this.latitude,
+    this.longitude,
     required this.role,
     required this.status,
     required this.createdAt,
@@ -39,6 +45,9 @@ class UserProfile {
       skills: json['skills'] != null ? List<String>.from(json['skills'] as List) : const [],
       availability: json['availability'] != null ? List<String>.from(json['availability'] as List) : const [],
       notes: json['notes'] as String?,
+      shareLocationAlways: json['share_location_always'] as bool? ?? false,
+      latitude: json['latitude'] as double?,
+      longitude: json['longitude'] as double?,
       role: UserRole.fromString(json['role'] as String?),
       status: json['status'] as String? ?? 'active',
       createdAt: json['created_at'] != null
@@ -60,6 +69,9 @@ class UserProfile {
       'skills': skills,
       'availability': availability,
       'notes': notes,
+      'share_location_always': shareLocationAlways,
+      'latitude': latitude,
+      'longitude': longitude,
       'role': role.value,
       'status': status,
       'created_at': createdAt.toIso8601String(),
@@ -76,6 +88,9 @@ class UserProfile {
     List<String>? skills,
     List<String>? availability,
     String? notes,
+    bool? shareLocationAlways,
+    double? latitude,
+    double? longitude,
     UserRole? role,
     String? status,
     DateTime? createdAt,
@@ -90,6 +105,9 @@ class UserProfile {
       skills: skills ?? this.skills,
       availability: availability ?? this.availability,
       notes: notes ?? this.notes,
+      shareLocationAlways: shareLocationAlways ?? this.shareLocationAlways,
+      latitude: latitude ?? this.latitude,
+      longitude: longitude ?? this.longitude,
       role: role ?? this.role,
       status: status ?? this.status,
       createdAt: createdAt ?? this.createdAt,

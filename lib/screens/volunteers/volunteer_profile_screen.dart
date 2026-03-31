@@ -47,19 +47,35 @@ class _VolunteerProfileScreenState extends State<VolunteerProfileScreen> {
   Widget build(BuildContext context) {
     if (_loading) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Profile')),
+        appBar: AppBar(
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios),
+            onPressed: () => Navigator.pop(context),
+          ),
+          title: const Text('Profile'),
+        ),
         body: const Center(child: CircularProgressIndicator()),
       );
     }
     if (_volunteer == null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Profile')),
+        appBar: AppBar(
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios),
+            onPressed: () => Navigator.pop(context),
+          ),
+          title: const Text('Profile'),
+        ),
         body: const Center(child: Text('Volunteer not found')),
       );
     }
     final v = _volunteer!;
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios),
+          onPressed: () => Navigator.pop(context),
+        ),
         title: const Text('Volunteer Profile'),
         actions: [
           IconButton(
