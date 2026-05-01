@@ -46,8 +46,10 @@ class UserProfileService {
     return Volunteer(
       id: map['id'] as String? ?? '',
       fullName: map['full_name'] as String? ?? '',
+      email: map['email'] as String? ?? '',
       phone: map['phone'] as String? ?? '',
       city: map['city'] as String? ?? '',
+      appRole: map['role'] as String?,
       skills:
           map['skills'] != null ? List<String>.from(map['skills'] as List) : [],
       availability: map['availability'] != null

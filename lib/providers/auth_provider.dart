@@ -60,6 +60,26 @@ class AuthProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  /// Reload [profiles] from Supabase (e.g. after an admin changes your role in the dashboard).
+  Future<void> refreshProfile() async {
+    if (_user == null) return;
+    _isProfileLoading = true;
+    notifyListeners();
+    try {
+      final latest = await _accountService.getProfile();
+      _profile = latest ?? _profile;
+      if (_profile == null) {
+        _profile = await _accountService.getOrCreateProfile(
+          email: _user?.email,
+        );
+      }
+    } catch (_) {
+      // keep cached profile
+    }
+    _isProfileLoading = false;
+    notifyListeners();
+  }
+
   void _onAuthStateChange(AuthState data) {
     _setUser(data.session?.user);
     if (_user != null) {

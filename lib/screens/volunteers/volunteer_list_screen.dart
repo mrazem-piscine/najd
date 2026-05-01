@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
 import '../../config/theme.dart';
+import '../../models/user_role.dart';
 import '../../models/volunteer.dart';
+import '../../providers/auth_provider.dart';
 import '../../services/volunteer_service.dart';
 import '../../widgets/animations.dart';
 import 'volunteer_profile_screen.dart';
@@ -21,6 +25,7 @@ class _VolunteerListScreenState extends State<VolunteerListScreen> {
   List<Volunteer> _allVolunteers = [];
   List<String> _cities = [];
   bool _loading = true;
+  bool _coordinatorDirectory = false;
   String? _filterCity;
   final List<String> _filterSkills = [];
   final List<String> _filterAvailability = [];
@@ -29,7 +34,9 @@ class _VolunteerListScreenState extends State<VolunteerListScreen> {
   @override
   void initState() {
     super.initState();
-    _load();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _load();
+    });
   }
 
   @override
@@ -41,8 +48,22 @@ class _VolunteerListScreenState extends State<VolunteerListScreen> {
   Future<void> _load() async {
     setState(() => _loading = true);
     try {
-      final all = await _service.getVolunteers();
-      _cities = await _service.getDistinctCities();
+      final role = context.read<AuthProvider>().role;
+      _coordinatorDirectory =
+          role == UserRole.admin || role == UserRole.support;
+      final all = await _service.getVolunteers(
+        coordinatorDirectory: _coordinatorDirectory,
+      );
+      if (_coordinatorDirectory) {
+        _cities = all
+            .map((v) => v.city)
+            .where((c) => c.isNotEmpty)
+            .toSet()
+            .toList()
+          ..sort();
+      } else {
+        _cities = await _service.getDistinctCities();
+      }
       _allVolunteers = all;
       _applyFiltersAndSort(_allVolunteers);
     } catch (e) {
@@ -68,7 +89,8 @@ class _VolunteerListScreenState extends State<VolunteerListScreen> {
       listCopy = listCopy.where((v) {
         return v.fullName.toLowerCase().contains(search) ||
             v.city.toLowerCase().contains(search) ||
-            v.phone.contains(search);
+            v.phone.contains(search) ||
+            v.email.toLowerCase().contains(search);
       }).toList();
     }
     if (_filterCity != null && _filterCity!.isNotEmpty) {
@@ -109,7 +131,7 @@ class _VolunteerListScreenState extends State<VolunteerListScreen> {
     return Scaffold(
       backgroundColor: AppTheme.background,
       appBar: AppBar(
-        title: const Text('Volunteers'),
+        title: Text(_coordinatorDirectory ? 'Members' : 'Volunteers'),
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
@@ -129,7 +151,7 @@ class _VolunteerListScreenState extends State<VolunteerListScreen> {
                   controller: _searchController,
                   onChanged: (_) => _applyFilters(),
                   decoration: InputDecoration(
-                    hintText: 'Search by name, city, phone...',
+                    hintText: 'Search by name, city, phone, email...',
                     hintStyle: const TextStyle(color: AppTheme.textLight),
                     prefixIcon:
                         const Icon(Icons.search, color: AppTheme.primary),
@@ -228,11 +250,18 @@ class _VolunteerListScreenState extends State<VolunteerListScreen> {
                               ),
                             ),
                             const SizedBox(height: 16),
-                            Text(
-                              'No volunteers found',
-                              style: TextStyle(
-                                fontSize: 16,
-                                color: AppTheme.textSecondary,
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 24),
+                              child: Text(
+                                _coordinatorDirectory
+                                    ? 'No members loaded. In Supabase → SQL Editor, run the script:\nsupabase/rpc_profiles_coordinator.sql'
+                                    : 'No volunteers found',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  color: AppTheme.textSecondary,
+                                  height: 1.4,
+                                ),
                               ),
                             ),
                           ],
@@ -485,13 +514,46 @@ class _ModernVolunteerCardState extends State<_ModernVolunteerCard> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          widget.volunteer.fullName,
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            color: AppTheme.textPrimary,
-                          ),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                widget.volunteer.fullName,
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppTheme.textPrimary,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            if (widget.volunteer.appRole != null &&
+                                widget.volunteer.appRole!.isNotEmpty) ...[
+                              const SizedBox(width: 8),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 4,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: AppTheme.surfaceLight,
+                                  borderRadius: BorderRadius.circular(10),
+                                  border: Border.all(
+                                    color: AppTheme.primary.withOpacity(0.25),
+                                  ),
+                                ),
+                                child: Text(
+                                  widget.volunteer.appRole!,
+                                  style: const TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                    color: AppTheme.primary,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ],
                         ),
                         const SizedBox(height: 4),
                         Row(

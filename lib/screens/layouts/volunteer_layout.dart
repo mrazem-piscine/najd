@@ -4,6 +4,8 @@ import 'dart:math' as math;
 import '../../config/theme.dart';
 import '../../widgets/animations.dart';
 import '../../widgets/app_card.dart';
+import '../../widgets/modern_bottom_nav.dart';
+import '../contact_support_screen.dart';
 import '../my_profile_screen.dart';
 import '../notifications_screen.dart';
 import '../settings_screen.dart';
@@ -34,101 +36,45 @@ class _VolunteerLayoutState extends State<VolunteerLayout> {
       ),
       const _VolunteerTasksScreen(),
       const _VolunteerAvailabilityScreen(),
-      const _ContactSupportScreen(),
+      const ContactSupportScreen(),
       const MyProfileScreen(),
     ];
 
     return Scaffold(
       body: SafeArea(child: pages[_index]),
-      bottomNavigationBar: _ModernBottomNav(
+      bottomNavigationBar: ModernBottomNav(
         currentIndex: _index,
         onTap: (i) => setState(() => _index = i),
-      ),
-    );
-  }
-}
-
-class _ModernBottomNav extends StatelessWidget {
-  final int currentIndex;
-  final Function(int) onTap;
-
-  const _ModernBottomNav({required this.currentIndex, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    final items = [
-      _NavItem(Icons.home_outlined, Icons.home, 'Home'),
-      _NavItem(Icons.assignment_outlined, Icons.assignment, 'Tasks'),
-      _NavItem(Icons.schedule_outlined, Icons.schedule, 'Schedule'),
-      _NavItem(Icons.support_agent_outlined, Icons.support_agent, 'Support'),
-      _NavItem(Icons.person_outline, Icons.person, 'Profile'),
-    ];
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
-      decoration: BoxDecoration(
-        color: AppTheme.surface,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 20,
-            offset: const Offset(0, -5),
+        items: const [
+          ModernBottomNavItem(
+            icon: Icons.home_outlined,
+            activeIcon: Icons.home,
+            label: 'Home',
+          ),
+          ModernBottomNavItem(
+            icon: Icons.assignment_outlined,
+            activeIcon: Icons.assignment,
+            label: 'Tasks',
+          ),
+          ModernBottomNavItem(
+            icon: Icons.schedule_outlined,
+            activeIcon: Icons.schedule,
+            label: 'Schedule',
+          ),
+          ModernBottomNavItem(
+            icon: Icons.support_agent_outlined,
+            activeIcon: Icons.support_agent,
+            label: 'Support',
+          ),
+          ModernBottomNavItem(
+            icon: Icons.person_outline,
+            activeIcon: Icons.person,
+            label: 'Profile',
           ),
         ],
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: List.generate(items.length, (index) {
-          final isSelected = currentIndex == index;
-          return GestureDetector(
-            onTap: () => onTap(index),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              padding: EdgeInsets.symmetric(
-                horizontal: isSelected ? 16 : 12,
-                vertical: 10,
-              ),
-              decoration: BoxDecoration(
-                color: isSelected
-                    ? AppTheme.primary.withOpacity(0.1)
-                    : Colors.transparent,
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    isSelected ? items[index].activeIcon : items[index].icon,
-                    color: isSelected ? AppTheme.primary : AppTheme.textLight,
-                    size: 24,
-                  ),
-                  if (isSelected) ...[
-                    const SizedBox(width: 8),
-                    Text(
-                      items[index].label,
-                      style: const TextStyle(
-                        color: AppTheme.primary,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ],
-              ),
-            ),
-          );
-        }),
-      ),
     );
   }
-}
-
-class _NavItem {
-  final IconData icon;
-  final IconData activeIcon;
-  final String label;
-
-  _NavItem(this.icon, this.activeIcon, this.label);
 }
 
 class _VolunteerHomeScreen extends StatefulWidget {
@@ -830,293 +776,5 @@ class _VolunteerAvailabilityScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const MyProfileScreen();
-  }
-}
-
-class _ContactSupportScreen extends StatefulWidget {
-  const _ContactSupportScreen();
-
-  @override
-  State<_ContactSupportScreen> createState() => _ContactSupportScreenState();
-}
-
-class _ContactSupportScreenState extends State<_ContactSupportScreen> {
-  final _messageController = TextEditingController();
-  bool _isSending = false;
-
-  @override
-  void dispose() {
-    _messageController.dispose();
-    super.dispose();
-  }
-
-  void _sendMessage() {
-    if (_messageController.text.trim().isEmpty) return;
-
-    setState(() => _isSending = true);
-
-    Future.delayed(const Duration(seconds: 1), () {
-      if (mounted) {
-        setState(() => _isSending = false);
-        _messageController.clear();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Row(
-              children: [
-                Icon(Icons.check_circle, color: Colors.white),
-                SizedBox(width: 12),
-                Text('Message sent successfully!'),
-              ],
-            ),
-            backgroundColor: AppTheme.success,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-          ),
-        );
-      }
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppTheme.background,
-      appBar: AppBar(
-        title: const Text('Contact Support'),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // Hero card
-            SlideInAnimation(
-              child: Container(
-                padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  gradient: AppTheme.primaryGradient,
-                  borderRadius: BorderRadius.circular(24),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppTheme.primary.withOpacity(0.3),
-                      blurRadius: 20,
-                      offset: const Offset(0, 8),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: const Icon(
-                        Icons.headset_mic,
-                        color: Colors.white,
-                        size: 32,
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    const Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'We\'re Here to Help',
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                          ),
-                          SizedBox(height: 4),
-                          Text(
-                            'Send us a message and we\'ll get back to you soon',
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.white70,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 24),
-
-            // Message form
-            SlideInAnimation(
-              delay: const Duration(milliseconds: 100),
-              child: Container(
-                padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  color: AppTheme.surface,
-                  borderRadius: BorderRadius.circular(24),
-                  boxShadow: AppTheme.cardShadow,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Your Message',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: AppTheme.textPrimary,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    TextField(
-                      controller: _messageController,
-                      maxLines: 6,
-                      decoration: InputDecoration(
-                        hintText:
-                            'Describe your question or concern...',
-                        hintStyle: const TextStyle(
-                          color: AppTheme.textLight,
-                        ),
-                        filled: true,
-                        fillColor: AppTheme.surfaceLight,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(16),
-                          borderSide: BorderSide.none,
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(16),
-                          borderSide: const BorderSide(
-                            color: AppTheme.primary,
-                            width: 2,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    SizedBox(
-                      width: double.infinity,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          gradient: AppTheme.primaryGradient,
-                          borderRadius: BorderRadius.circular(16),
-                          boxShadow: [
-                            BoxShadow(
-                              color: AppTheme.primary.withOpacity(0.3),
-                              blurRadius: 12,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: Material(
-                          color: Colors.transparent,
-                          child: InkWell(
-                            onTap: _isSending ? null : _sendMessage,
-                            borderRadius: BorderRadius.circular(16),
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 16),
-                              child: Center(
-                                child: _isSending
-                                    ? const SizedBox(
-                                        height: 22,
-                                        width: 22,
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 2.5,
-                                          color: Colors.white,
-                                        ),
-                                      )
-                                    : const Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          Icon(Icons.send, color: Colors.white),
-                                          SizedBox(width: 8),
-                                          Text(
-                                            'Send Message',
-                                            style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.w600,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 24),
-
-            // Info card
-            SlideInAnimation(
-              delay: const Duration(milliseconds: 200),
-              child: Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: AppTheme.info.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                    color: AppTheme.info.withOpacity(0.2),
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: AppTheme.info.withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: const Icon(
-                        Icons.info_outline,
-                        color: AppTheme.info,
-                        size: 20,
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    const Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Response Time',
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              color: AppTheme.textPrimary,
-                            ),
-                          ),
-                          SizedBox(height: 2),
-                          Text(
-                            'We typically respond within 24 hours',
-                            style: TextStyle(
-                              fontSize: 13,
-                              color: AppTheme.textSecondary,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
   }
 }

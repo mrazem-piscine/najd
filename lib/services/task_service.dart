@@ -7,15 +7,40 @@ class TaskService {
   static const String _tasksTable = 'tasks';
   static const String _assignmentsTable = 'task_assignments';
 
-  Future<List<TaskModel>> getTasks({TaskStatus? status}) async {
+  List<TaskModel> _mapTasks(dynamic response) {
+    return (response as List)
+        .map((e) => TaskModel.fromJson(e as Map<String, dynamic>))
+        .toList();
+  }
+
+  Future<dynamic> _tasksQueryOrdered({
+    TaskStatus? status,
+    required String orderColumn,
+  }) async {
     var query = _client.from(_tasksTable).select();
     if (status != null) {
       query = query.eq('status', status.name);
     }
-    final response = await query.order('date', ascending: false);
-    return (response as List)
-        .map((e) => TaskModel.fromJson(e as Map<String, dynamic>))
-        .toList();
+    return query.order(orderColumn, ascending: false);
+  }
+
+  /// Orders by `date` when the column exists; falls back to `created_at` (older DBs).
+  Future<List<TaskModel>> getTasks({TaskStatus? status}) async {
+    try {
+      final response = await _tasksQueryOrdered(status: status, orderColumn: 'date');
+      return _mapTasks(response);
+    } catch (e) {
+      final msg = e.toString();
+      if (msg.contains('PGRST204') ||
+          msg.contains('42703') ||
+          (msg.contains('date') &&
+              (msg.contains('does not exist') || msg.contains('schema cache')))) {
+        final response =
+            await _tasksQueryOrdered(status: status, orderColumn: 'created_at');
+        return _mapTasks(response);
+      }
+      rethrow;
+    }
   }
 
   Future<TaskModel?> getTaskById(String id) async {
@@ -23,6 +48,35 @@ class TaskService {
         await _client.from(_tasksTable).select().eq('id', id).maybeSingle();
     if (response == null) return null;
     return TaskModel.fromJson(response);
+  }
+
+  static bool _missingSchemaColumnError(Object e) {
+    final s = e.toString();
+    return s.contains('PGRST204') ||
+        s.contains('42703') ||
+        (s.contains('schema cache') && s.contains('column'));
+  }
+
+  Map<String, dynamic> _createPayload({
+    required String title,
+    required String description,
+    required String location,
+    required List<String> requiredSkills,
+    required DateTime date,
+    required TaskStatus status,
+    bool includeDate = true,
+    bool includeLocation = true,
+    bool includeDescription = true,
+    bool includeRequiredSkills = true,
+  }) {
+    return {
+      'title': title,
+      if (includeDescription) 'description': description,
+      if (includeLocation) 'location': location,
+      if (includeRequiredSkills) 'required_skills': requiredSkills,
+      'status': status.name,
+      if (includeDate) 'date': date.toIso8601String(),
+    };
   }
 
   Future<TaskModel> createTask({
@@ -33,35 +87,122 @@ class TaskService {
     required DateTime date,
     TaskStatus status = TaskStatus.pending,
   }) async {
-    final data = {
-      'title': title,
-      'description': description,
-      'location': location,
-      'required_skills': requiredSkills,
-      'date': date.toIso8601String(),
-      'status': status.name,
+    final attempts = <Map<String, dynamic>>[
+      _createPayload(
+        title: title,
+        description: description,
+        location: location,
+        requiredSkills: requiredSkills,
+        date: date,
+        status: status,
+      ),
+      _createPayload(
+        title: title,
+        description: description,
+        location: location,
+        requiredSkills: requiredSkills,
+        date: date,
+        status: status,
+        includeDate: false,
+      ),
+      _createPayload(
+        title: title,
+        description: description,
+        location: location,
+        requiredSkills: requiredSkills,
+        date: date,
+        status: status,
+        includeDate: false,
+        includeLocation: false,
+      ),
+      _createPayload(
+        title: title,
+        description: description,
+        location: location,
+        requiredSkills: requiredSkills,
+        date: date,
+        status: status,
+        includeDate: false,
+        includeLocation: false,
+        includeDescription: false,
+      ),
+      {
+        'title': title,
+        'required_skills': requiredSkills,
+        'status': status.name,
+      },
+      {'title': title, 'status': status.name},
+    ];
+
+    Object? last;
+    for (final data in attempts) {
+      try {
+        final response = await _client
+            .from(_tasksTable)
+            .insert(data)
+            .select()
+            .single();
+        return TaskModel.fromJson(response);
+      } catch (e) {
+        last = e;
+        if (!_missingSchemaColumnError(e)) rethrow;
+      }
+    }
+    throw last!;
+  }
+
+  Map<String, dynamic> _updatePayload(
+    TaskModel task, {
+    bool includeDate = true,
+    bool includeLocation = true,
+    bool includeDescription = true,
+    bool includeRequiredSkills = true,
+  }) {
+    return {
+      'title': task.title,
+      if (includeDescription) 'description': task.description,
+      if (includeLocation) 'location': task.location,
+      if (includeRequiredSkills) 'required_skills': task.requiredSkills,
+      'status': task.status.name,
+      if (includeDate) 'date': task.date.toIso8601String(),
     };
-    final response =
-        await _client.from(_tasksTable).insert(data).select().single();
-    return TaskModel.fromJson(response);
   }
 
   Future<TaskModel> updateTask(TaskModel task) async {
-    final data = {
-      'title': task.title,
-      'description': task.description,
-      'location': task.location,
-      'required_skills': task.requiredSkills,
-      'date': task.date.toIso8601String(),
-      'status': task.status.name,
-    };
-    final response = await _client
-        .from(_tasksTable)
-        .update(data)
-        .eq('id', task.id)
-        .select()
-        .single();
-    return TaskModel.fromJson(response);
+    final attempts = <Map<String, dynamic>>[
+      _updatePayload(task),
+      _updatePayload(task, includeDate: false),
+      _updatePayload(task, includeDate: false, includeLocation: false),
+      _updatePayload(
+        task,
+        includeDate: false,
+        includeLocation: false,
+        includeDescription: false,
+      ),
+      {
+        'title': task.title,
+        'required_skills': task.requiredSkills,
+        'status': task.status.name,
+      },
+      {'title': task.title, 'status': task.status.name},
+    ];
+
+    Object? last;
+    for (final data in attempts) {
+      try {
+        final response = await _client
+            .from(_tasksTable)
+            .update(data)
+            .eq('id', task.id)
+            .select()
+            .single();
+        return TaskModel.fromJson(response);
+      } catch (e) {
+        last = e;
+        if (!_missingSchemaColumnError(e)) rethrow;
+      }
+    }
+    throw last!;
   }
 
   Future<void> updateTaskStatus(String taskId, TaskStatus status) async {

@@ -59,7 +59,9 @@ class TaskModel {
           : [],
       date: json['date'] != null
           ? DateTime.parse(json['date'] as String)
-          : DateTime.now(),
+          : json['created_at'] != null
+              ? DateTime.parse(json['created_at'] as String)
+              : DateTime.now(),
       status: TaskStatus.fromString(json['status'] as String?),
       createdAt: json['created_at'] != null
           ? DateTime.parse(json['created_at'] as String)

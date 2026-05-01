@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../config/theme.dart';
 import '../providers/auth_provider.dart';
 import 'my_profile_screen.dart';
 
@@ -19,6 +20,28 @@ class SettingsScreen extends StatelessWidget {
             subtitle: const Text('View and edit your profile'),
             trailing: const Icon(Icons.chevron_right),
             onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MyProfileScreen())),
+          ),
+          ListTile(
+            leading: Icon(Icons.sync, color: AppTheme.secondary),
+            title: const Text('Reload account & permissions'),
+            subtitle: Text(
+              'Use after your role was changed (admin / support / volunteer). '
+              'Current: ${auth.role.name}',
+              style: const TextStyle(fontSize: 12),
+            ),
+            onTap: () async {
+              await auth.refreshProfile();
+              if (!context.mounted) return;
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Updated. Role: ${auth.role.name}'),
+                  behavior: SnackBarBehavior.floating,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              );
+            },
           ),
           const Divider(),
           ListTile(

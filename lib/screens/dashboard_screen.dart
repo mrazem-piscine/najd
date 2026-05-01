@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
 import '../config/theme.dart';
+import '../models/user_role.dart';
+import '../providers/auth_provider.dart';
 import '../services/volunteer_service.dart';
 import '../services/task_service.dart';
 import '../widgets/animations.dart';
@@ -40,7 +44,9 @@ class _DashboardScreenState extends State<DashboardScreen>
       parent: _counterController,
       curve: Curves.easeOutCubic,
     );
-    _loadStats();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _loadStats();
+    });
   }
 
   @override
@@ -55,7 +61,11 @@ class _DashboardScreenState extends State<DashboardScreen>
   Future<void> _loadStats() async {
     setState(() => _loading = true);
     try {
-      final vs = await _volunteerService.getVolunteersCount();
+      final role = Provider.of<AuthProvider>(context, listen: false).role;
+      final coordinator = role == UserRole.admin || role == UserRole.support;
+      final vs = await _volunteerService.getVolunteersCount(
+        coordinatorView: coordinator,
+      );
       final active = await _taskService.getActiveTasksCount();
       final completed = await _taskService.getCompletedTasksCount();
       setState(() {
@@ -95,27 +105,31 @@ class _DashboardScreenState extends State<DashboardScreen>
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'Dashboard',
-                                    style: TextStyle(
-                                      fontSize: 28,
-                                      fontWeight: FontWeight.bold,
-                                      color: AppTheme.textPrimary,
-                                      letterSpacing: -0.5,
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Dashboard',
+                                      style: TextStyle(
+                                        fontSize: 28,
+                                        fontWeight: FontWeight.bold,
+                                        color: AppTheme.textPrimary,
+                                        letterSpacing: -0.5,
+                                      ),
                                     ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    'Welcome back, Admin',
-                                    style: TextStyle(
-                                      fontSize: 15,
-                                      color: AppTheme.textSecondary,
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      'Support team — coordinate volunteers & tasks',
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        fontSize: 15,
+                                        color: AppTheme.textSecondary,
+                                      ),
                                     ),
-                                  ),
-                                ],
+                                  ],
+                                ),
                               ),
                               Row(
                                 children: [
@@ -171,12 +185,16 @@ class _DashboardScreenState extends State<DashboardScreen>
                                               ),
                                             ),
                                             const SizedBox(width: 8),
-                                            const Text(
-                                              'Najd Volunteer',
-                                              style: TextStyle(
-                                                fontSize: 20,
-                                                fontWeight: FontWeight.bold,
-                                                color: AppTheme.textPrimary,
+                                            Expanded(
+                                              child: Text(
+                                                'Najd Volunteer',
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                                style: const TextStyle(
+                                                  fontSize: 20,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: AppTheme.textPrimary,
+                                                ),
                                               ),
                                             ),
                                           ],
@@ -599,12 +617,17 @@ class _QuickActionButtonState extends State<_QuickActionButton> {
           children: [
             Icon(widget.icon, color: Colors.white, size: 20),
             const SizedBox(width: 8),
-            Text(
-              widget.label,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 15,
-                fontWeight: FontWeight.w600,
+            Flexible(
+              child: Text(
+                widget.label,
+                maxLines: 2,
+                textAlign: TextAlign.center,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
           ],
