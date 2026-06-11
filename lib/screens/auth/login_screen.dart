@@ -214,7 +214,7 @@ class _LoginScreenState extends State<LoginScreen>
                               keyboardType: TextInputType.emailAddress,
                               decoration: InputDecoration(
                                 labelText: 'Email',
-                                hintText: 'you@example.com',
+                                hintText: 'name@email.com',
                                 prefixIcon: const Icon(Icons.email_outlined,
                                     color: AppTheme.primary),
                                 filled: true,
@@ -380,6 +380,25 @@ class _LoginScreenState extends State<LoginScreen>
                   ),
 
                   const SizedBox(height: 24),
+
+                  if (AppConfig.hasReviewerCredentials)
+                    FadeInAnimation(
+                      delay: const Duration(milliseconds: 550),
+                      child: TextButton(
+                        onPressed: () async {
+                          _emailController.text = AppConfig.reviewerEmail;
+                          _passwordController.text = AppConfig.reviewerPassword;
+                          await _submit();
+                        },
+                        child: Text(
+                          'Sign in with reviewer account',
+                          style: TextStyle(
+                            color: Colors.white.withOpacity(0.75),
+                            fontSize: 13,
+                          ),
+                        ),
+                      ),
+                    ),
 
                   // Sign up link
                   FadeInAnimation(

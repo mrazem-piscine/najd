@@ -77,7 +77,7 @@ class _LocationPickerState extends State<LocationPicker> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(_error ??
-              'No locations available. Ask an admin to seed the locations table.'),
+              'No locations available yet. Please contact your coordinator.'),
           backgroundColor: AppTheme.warning,
           behavior: SnackBarBehavior.floating,
           shape:

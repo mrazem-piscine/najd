@@ -252,8 +252,8 @@ class _CallScreenState extends State<CallScreen> {
                               SizedBox(width: 8),
                               Expanded(
                                 child: Text(
-                                  'Video stream is reserved – wire your WebRTC/Agora '
-                                  'SDK using session channel name to enable it.',
+                                  'Video is connecting. If video does not appear, '
+                                  'continue with voice or try again.',
                                   style: TextStyle(
                                     color: Colors.white70,
                                     fontSize: 12,

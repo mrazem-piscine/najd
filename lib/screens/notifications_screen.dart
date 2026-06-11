@@ -162,8 +162,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                               boxShadow: AppTheme.cardShadow,
                             ),
                             child: const Text(
-                              'No threads yet. Run supabase/support_messages_and_tasks.sql '
-                              'in the Supabase SQL editor, then volunteers can message from Support.',
+                              'No support threads yet. Volunteers can start a conversation '
+                              'from the Support tab.',
                               style: TextStyle(
                                 color: AppTheme.textSecondary,
                                 height: 1.4,

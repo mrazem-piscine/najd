@@ -144,7 +144,7 @@ class _AdminToolsDrawer extends StatelessWidget {
             ListTile(
               leading: const Icon(Icons.analytics_outlined, color: AppTheme.primary),
               title: const Text('Reports'),
-              subtitle: const Text('Coming soon'),
+              subtitle: const Text('Usage summaries'),
               onTap: () => _push(context, const _ReportsScreen()),
             ),
             const Divider(height: 1),
@@ -623,12 +623,14 @@ class _SystemSettingsScreen extends StatelessWidget {
         _InfoBlock(
           title: 'Configuration',
           body:
-              'Backend settings (Supabase URL, keys, email) stay in your project config and Supabase dashboard — not in this screen yet.',
+              'Platform settings such as API keys, email delivery, and environment configuration '
+              'are managed in the Supabase dashboard and release build pipeline.',
         ),
         _InfoBlock(
-          title: 'Future',
+          title: 'Operations',
           body:
-              'This tab is reserved for feature flags, maintenance messages, and other operator controls.',
+              'Use User management for roles and account status. Contact your technical team '
+              'for maintenance windows or feature toggles.',
         ),
       ],
     );

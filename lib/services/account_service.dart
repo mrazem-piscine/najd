@@ -172,4 +172,13 @@ class AccountService {
     } catch (_) {}
     return updateStatus(userId: userId, status: status);
   }
+
+  /// Permanently deletes the signed-in user's account via Supabase RPC.
+  /// Requires `delete_own_account` from supabase/production_hardening.sql.
+  Future<void> deleteOwnAccount() async {
+    if (currentUserId == null) {
+      throw Exception('Not authenticated');
+    }
+    await _client.rpc('delete_own_account');
+  }
 }

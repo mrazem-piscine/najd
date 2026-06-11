@@ -329,8 +329,11 @@ class _TaskDetailsScreenState extends State<TaskDetailsScreen> {
       );
     }
     final task = _task!;
-    final role = context.watch<AuthProvider>().role;
+    final auth = context.watch<AuthProvider>();
+    final role = auth.role;
     final isCoordinator = role == UserRole.admin || role == UserRole.support;
+    final isAssigned =
+        _assigned.any((v) => v.id == auth.user?.id);
     final statusColor = _statusColor(task.status);
 
     return Scaffold(
@@ -340,7 +343,8 @@ class _TaskDetailsScreenState extends State<TaskDetailsScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         actions: [
-          if (task.status != TaskStatus.completed)
+          if (task.status != TaskStatus.completed &&
+              (isCoordinator || isAssigned))
             PopupMenuButton<TaskStatus>(
               tooltip: 'Update status',
               icon: const Icon(Icons.more_vert_rounded),

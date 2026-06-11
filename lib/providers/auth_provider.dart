@@ -144,6 +144,29 @@ class AuthProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  Future<bool> deleteAccount() async {
+    _error = null;
+    notifyListeners();
+    try {
+      await _accountService.deleteOwnAccount();
+      await _authService.signOut();
+      _setUser(null);
+      _profile = null;
+      notifyListeners();
+      return true;
+    } on AuthException catch (e) {
+      _error = e.message;
+      notifyListeners();
+      return false;
+    } catch (e) {
+      _error = e.toString().contains('delete_own_account')
+          ? 'Account deletion is not available yet. Use the web form or contact support.'
+          : e.toString();
+      notifyListeners();
+      return false;
+    }
+  }
+
   void clearError() {
     _error = null;
     notifyListeners();

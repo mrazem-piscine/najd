@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
 
+import '../config/app_config.dart';
 import '../config/theme.dart';
 import '../widgets/animations.dart';
 import '../widgets/support_conversation_view.dart';
@@ -19,6 +21,28 @@ class ContactSupportScreen extends StatelessWidget {
         title: const Text('Support chat'),
         backgroundColor: Colors.transparent,
         elevation: 0,
+        actions: [
+          IconButton(
+            tooltip: 'Report abuse',
+            icon: const Icon(Icons.flag_outlined),
+            onPressed: () async {
+              final uri = Uri(
+                scheme: 'mailto',
+                path: AppConfig.supportEmail,
+                queryParameters: {
+                  'subject': 'Najd Volunteer — Report abuse',
+                  'body':
+                      'Please describe the issue and include any relevant details.',
+                },
+              );
+              if (!await launchUrl(uri) && context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Email: ${AppConfig.supportEmail}')),
+                );
+              }
+            },
+          ),
+        ],
       ),
       body: uid == null
           ? const Center(

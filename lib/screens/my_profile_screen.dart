@@ -3,6 +3,7 @@ import '../config/theme.dart';
 import '../models/volunteer.dart';
 import '../services/user_profile_service.dart';
 import '../widgets/animations.dart';
+import 'settings_screen.dart';
 
 class MyProfileScreen extends StatefulWidget {
   const MyProfileScreen({super.key});
@@ -361,6 +362,25 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
                       ),
                     ),
                   ],
+
+                  const SizedBox(height: 16),
+                  SlideInAnimation(
+                    delay: const Duration(milliseconds: 450),
+                    child: ListTile(
+                      tileColor: AppTheme.surface,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      leading: const Icon(Icons.settings_outlined),
+                      title: const Text('Account & Settings'),
+                      subtitle: const Text('Privacy, support, sign out, delete account'),
+                      trailing: const Icon(Icons.chevron_right),
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const SettingsScreen()),
+                      ),
+                    ),
+                  ),
 
                   const SizedBox(height: 24),
                 ],

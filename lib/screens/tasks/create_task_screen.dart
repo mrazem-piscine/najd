@@ -154,7 +154,7 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              '$e\n\nIf this mentions "date" or "location", run supabase/support_messages_and_tasks.sql in Supabase.',
+              'Could not create task. Please check your connection and try again.\n\n$e',
               style: const TextStyle(fontSize: 12),
             ),
             backgroundColor: AppTheme.error,

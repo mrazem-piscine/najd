@@ -24,6 +24,8 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^3.0.1
+  flutter_launcher_icons: ^0.14.3
+  flutter_native_splash: ^2.4.4
 
 # `record` 5.1.2 pins `record_linux: ^0.7.2`, which doesn't implement the
 # `startStream` method added in `record_platform_interface` 1.4.0+. Even though
@@ -36,3 +38,25 @@ dependency_overrides:
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/branding/
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: assets/branding/app_icon.png
+  adaptive_icon_background: "#1E3A5F"
+  adaptive_icon_foreground: assets/branding/app_icon_foreground.png
+  min_sdk_android: 21
+  remove_alpha_ios: true
+
+flutter_native_splash:
+  color: "#1E3A5F"
+  image: assets/branding/splash_logo.png
+  android_12:
+    color: "#1E3A5F"
+    image: assets/branding/splash_logo.png
+    icon_background_color: "#1E3A5F"
+  ios: true
+  android: true
+  web: false
